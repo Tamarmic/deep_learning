@@ -8,10 +8,9 @@ import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader, TensorDataset
 
 import data_utils
-from models import WindowTagger
+from models import WindowTagger, WindowTaggerSubword
 
 
-# Helper Functions
 def create_windows(word_indices, window_size=2):
     windows = []
     for i in range(window_size, len(word_indices) - window_size):
@@ -20,8 +19,28 @@ def create_windows(word_indices, window_size=2):
     return windows
 
 
+def plot_and_save(y_values, title, ylabel, filename):
+    plt.figure()
+    plt.plot(y_values)
+    plt.title(title)
+    plt.xlabel("Epoch")
+    plt.ylabel(ylabel)
+    plt.savefig(filename)
+    plt.close()
+
+
 def evaluate_model(
-    model, data, word2idx, tag2idx, idx2tag, task_type="pos", window_size=2
+    model,
+    data,
+    word2idx,
+    tag2idx,
+    idx2tag,
+    task_type="pos",
+    window_size=2,
+    prefix2idx=None,
+    suffix2idx=None,
+    use_subwords=False,
+    device="cpu",
 ):
     model.eval()
     correct, total = 0, 0
@@ -34,8 +53,22 @@ def evaluate_model(
             word_idxs_padded = data_utils.pad_sentence(word_idxs, window_size)
             windows = create_windows(word_idxs_padded, window_size)
 
-            X = torch.tensor(windows)
-            logits = model(X)
+            X = torch.tensor(windows).to(device)
+            if use_subwords:
+                pre_idxs, suf_idxs = data_utils.encode_prefix_suffix(
+                    sentence, prefix2idx, suffix2idx
+                )
+                pre_windows = create_windows(
+                    data_utils.pad_sentence(pre_idxs, window_size), window_size
+                )
+                suf_windows = create_windows(
+                    data_utils.pad_sentence(suf_idxs, window_size), window_size
+                )
+                prefix_tensor = torch.tensor(pre_windows).to(device)
+                suffix_tensor = torch.tensor(suf_windows).to(device)
+                logits = model(X, prefix_tensor, suffix_tensor)
+            else:
+                logits = model(X)
             predictions = torch.argmax(logits, dim=1)
 
             for pred, gold in zip(predictions, tag_idxs):
@@ -46,6 +79,46 @@ def evaluate_model(
                     total += 1
 
     return correct / total if total > 0 else 0.0
+
+
+def predict_test(
+    model,
+    data,
+    word2idx,
+    idx2tag,
+    output_file,
+    window_size=2,
+    prefix2idx=None,
+    suffix2idx=None,
+    use_subwords=False,
+    device="cpu",
+):
+    model.eval()
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
+    with open(output_file, "w") as fout:
+        with torch.no_grad():
+            for sentence in data:
+                word_idxs = [
+                    word2idx.get(w, word2idx[data_utils.UNK_TOKEN]) for w in sentence
+                ]
+                padded = data_utils.pad_sentence(word_idxs, window_size)
+                windows = create_windows(padded, window_size)
+                X = torch.tensor(windows).to(device)
+                if use_subwords:
+                    pre_idxs, suf_idxs = data_utils.encode_prefix_suffix(
+                        sentence, prefix2idx, suffix2idx, labeled=False
+                    )
+                    pre_padded = data_utils.pad_sentence(pre_idxs, window_size)
+                    suf_padded = data_utils.pad_sentence(suf_idxs, window_size)
+                    pre_windows = create_windows(pre_padded, window_size)
+                    suf_windows = create_windows(suf_padded, window_size)
+                    pre_tensor = torch.tensor(pre_windows).to(device)
+                    suf_tensor = torch.tensor(suf_windows).to(device)
+                    preds = torch.argmax(model(X, pre_tensor, suf_tensor), dim=1)
+                preds = torch.argmax(model(X), dim=1)
+                for word, pred in zip(sentence, preds):
+                    fout.write(f"{word} {idx2tag[pred.item()]}\n")
+                fout.write("\n")
 
 
 def train_model(
@@ -60,7 +133,10 @@ def train_model(
     num_epochs,
     task_type,
     window_size,
-    device,
+    prefix2idx=None,
+    suffix2idx=None,
+    use_subwords=False,
+    device="cpu",
 ):
     train_losses = []
     dev_accuracies = []
@@ -69,19 +145,31 @@ def train_model(
         model.train()
         epoch_loss = 0
 
-        for X_batch, y_batch in train_loader:
-            X_batch, y_batch = X_batch.to(device), y_batch.to(device)
-
+        for batch in train_loader:
             optimizer.zero_grad()
-            logits = model(X_batch)
-            loss = loss_fn(logits, y_batch)
+            if use_subwords:
+                X, P, S, Y = [b.to(device) for b in batch]
+                logits = model(X, P, S)
+            else:
+                X, Y = [b.to(device) for b in batch]
+                logits = model(X)
+            loss = loss_fn(logits, Y)
             loss.backward()
             optimizer.step()
-
             epoch_loss += loss.item()
 
         dev_acc = evaluate_model(
-            model, dev_data, word2idx, tag2idx, idx2tag, task_type, window_size
+            model,
+            dev_data,
+            word2idx,
+            tag2idx,
+            idx2tag,
+            task_type,
+            window_size,
+            prefix2idx,
+            suffix2idx,
+            use_subwords,
+            device,
         )
         print(
             f"Epoch {epoch+1}/{num_epochs} - Train Loss: {epoch_loss:.4f} - Dev Accuracy: {dev_acc:.4f}"
@@ -92,45 +180,15 @@ def train_model(
     return train_losses, dev_accuracies
 
 
-def predict_test(
-    model, data, word2idx, idx2tag, output_file, window_size=2, device="cpu"
-):
-    model.eval()
-    os.makedirs(os.path.dirname(output_file), exist_ok=True)
-    with open(output_file, "w") as fout:
-        with torch.no_grad():
-            for sentence in data:
-                word_idxs = [word2idx.get(w, word2idx["<UNK>"]) for w in sentence]
-                padded = [0] * window_size + word_idxs + [0] * window_size
-                windows = [
-                    padded[i - window_size : i + window_size + 1]
-                    for i in range(window_size, len(padded) - window_size)
-                ]
-                X = torch.tensor(windows).to(device)
-                preds = torch.argmax(model(X), dim=1)
-                for word, pred in zip(sentence, preds):
-                    fout.write(f"{word} {idx2tag[pred.item()]}\n")
-                fout.write("\n")
-
-
-def plot_and_save(y_values, title, ylabel, filename):
-    plt.figure()
-    plt.plot(y_values)
-    plt.title(title)
-    plt.xlabel("Epoch")
-    plt.ylabel(ylabel)
-    plt.savefig(filename)
-    plt.close()
-
-
 # Main
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--task", type=str, choices=["pos", "ner"], default="pos")
+    parser.add_argument("--task", type=str, choices=["pos", "ner"], required=True)
     parser.add_argument(
-        "--use_pretrained_embeddings",
-        action="store_true",
-        help="Use pre-trained word embeddings instead of random initialization",
+        "--output_suffix",
+        type=str,
+        required=True,
+        help="e.g., 1 for part1, 3 for part3, 4 for part4",
     )
     parser.add_argument("--embedding_dim", type=int, default=50)
     parser.add_argument("--hidden_dim", type=int, default=100)
@@ -139,6 +197,12 @@ if __name__ == "__main__":
     parser.add_argument("--learning_rate", type=float, default=1e-3)
     parser.add_argument("--weight_decay", type=float, default=1e-5)
     parser.add_argument("--window_size", type=int, default=2)
+    parser.add_argument(
+        "--use_pretrained_embeddings",
+        action="store_true",
+        help="Use pre-trained word embeddings instead of random initialization",
+    )
+    parser.add_argument("--use_subwords", action="store_true")
     args = parser.parse_args()
 
     # Setup
@@ -176,32 +240,66 @@ if __name__ == "__main__":
     else:
         embedding_matrix = None
 
-    # Prepare model
-    model = WindowTagger(
-        vocab_size=len(word2idx),
-        embedding_dim=args.embedding_dim,
-        hidden_dim=args.hidden_dim,
-        output_dim=len(tag2idx),
-        window_size=args.window_size,
-        pretrained_embedding=embedding_matrix,
-    ).to(device)
-
-    optimizer = optim.Adam(
-        model.parameters(), lr=args.learning_rate, weight_decay=args.weight_decay
-    )
-    loss_fn = nn.CrossEntropyLoss()
+    if args.use_subwords:
+        prefix2idx, suffix2idx = data_utils.build_prefix_suffix_vocab(train_data)
 
     # Prepare Dataloader
     all_windows, all_tags = [], []
+    if args.use_subwords:
+        all_prefixes, all_suffixes = [], []
     for sentence in train_data:
         word_idxs, tag_idxs = data_utils.encode_sentence(sentence, word2idx, tag2idx)
         word_idxs_padded = data_utils.pad_sentence(word_idxs, args.window_size)
         windows = create_windows(word_idxs_padded, args.window_size)
         all_windows.extend(windows)
         all_tags.extend(tag_idxs)
+        if args.use_subwords:
+            pre_idxs, suf_idxs = data_utils.encode_prefix_suffix(
+                sentence, prefix2idx, suffix2idx
+            )
+            padded_pre = data_utils.pad_sentence(pre_idxs, args.window_size)
+            padded_suf = data_utils.pad_sentence(suf_idxs, args.window_size)
+            all_prefixes += create_windows(padded_pre, args.window_size)
+            all_suffixes += create_windows(padded_suf, args.window_size)
 
-    train_dataset = TensorDataset(torch.tensor(all_windows), torch.tensor(all_tags))
+    if args.use_subwords:
+        train_dataset = TensorDataset(
+            torch.tensor(all_windows),
+            torch.tensor(all_prefixes),
+            torch.tensor(all_suffixes),
+            torch.tensor(all_tags),
+        )
+    else:
+        train_dataset = TensorDataset(torch.tensor(all_windows), torch.tensor(all_tags))
+
     train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
+
+    # Prepare model
+    if args.use_subwords:
+        model = WindowTaggerSubword(
+            vocab_size=len(word2idx),
+            prefix_size=len(prefix2idx),
+            suffix_size=len(suffix2idx),
+            embedding_dim=args.embedding_dim,
+            hidden_dim=args.hidden_dim,
+            output_dim=len(tag2idx),
+            window_size=args.window_size,
+            pretrained_embedding=embedding_matrix,
+        ).to(device)
+    else:
+        model = WindowTagger(
+            vocab_size=len(word2idx),
+            embedding_dim=args.embedding_dim,
+            hidden_dim=args.hidden_dim,
+            output_dim=len(tag2idx),
+            window_size=args.window_size,
+            pretrained_embedding=embedding_matrix,
+        ).to(device)
+
+    optimizer = optim.Adam(
+        model.parameters(), lr=args.learning_rate, weight_decay=args.weight_decay
+    )
+    loss_fn = nn.CrossEntropyLoss()
 
     # Train
     train_losses, dev_accuracies = train_model(
@@ -216,10 +314,13 @@ if __name__ == "__main__":
         args.num_epochs,
         args.task,
         args.window_size,
+        prefix2idx if args.use_subwords else None,
+        suffix2idx if args.use_subwords else None,
+        args.use_subwords,
         device,
     )
 
-    file_suffix = "3" if args.use_pretrained_embeddings else "1"
+    file_suffix = args.output_suffix
 
     # Save model and logs
     torch.save(model.state_dict(), f"saved_models/model{file_suffix}_{args.task}.pt")
@@ -243,7 +344,20 @@ if __name__ == "__main__":
     # Predict
     output_file = f"predictions/test{file_suffix}.{args.task}"
     predict_test(
-        model, test_data, word2idx, idx2tag, output_file, args.window_size, device
+        model,
+        test_data,
+        word2idx,
+        idx2tag,
+        output_file,
+        args.window_size,
+        prefix2idx if args.use_subwords else None,
+        suffix2idx if args.use_subwords else None,
+        args.use_subwords,
+        device,
     )
 
     print(f"Finished training and prediction for {args.task.upper()}!")
+
+
+if __name__ == "__main__":
+    main()

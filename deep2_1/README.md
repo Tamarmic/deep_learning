@@ -1,75 +1,133 @@
-# Assigment 2
+# Assignment 2 – Window-Based Sequence Tagger
 
-## Requirements
+This project implements a neural window-based tagger for POS and NER, with extensions including:
 
+-   Pretrained word embeddings
+-   Subword features (prefixes + suffixes)
+-   Word similarity via pretrained vectors
+
+---
+
+## 📦 Requirements
+
+-   Python 3
 -   PyTorch
--   Numpy
+-   NumPy
 -   Matplotlib
 
 Install missing packages:
+
+```
 pip install torch numpy matplotlib
-
-## Part 1 - Window-Based Tagger (Random Embeddings)
-
-Train and predict for POS tagging:
-python tagger1.py --task pos
-
-Train and predict for NER tagging:
-python tagger1.py --task ner
-
-Arguments (default values shown):
-
---task Task type: 'pos' or 'ner' (default: pos)  
---embedding_dim Word embedding dimension (default: 50)  
---hidden_dim Hidden layer dimension (default: 100)  
---batch_size Batch size for training (default: 32)  
---num_epochs Number of training epochs (default: 10)  
---learning_rate Learning rate (default: 0.001)  
---window_size Context window size on each side (default: 2)  
---use_pretrained_embeddings Use external embeddings instead of random (Part 3)
-
-Outputs after training:
-
--   `saved_models/`: Trained model files
--   `logs/`: Loss and accuracy logs (.npy)
--   `plots/`: Loss and accuracy graphs
--   `predictions/`: Predicted tags for test sets (e.g., test1.pos, test3.ner)
+```
 
 ---
 
-## Part 2 - Most Similar Words Using Pretrained Embeddings
+## 🧪 Part 1: Window-Based Tagger (Random Embeddings)
 
-Run similarity search:
+Train and evaluate a simple window-based tagger using random word embeddings.
+
+### POS Tagging:
+
+```
+python tagger1.py --task pos --output_suffix 1
+```
+
+### NER Tagging:
+
+```
+python tagger1.py --task ner --output_suffix 1
+```
+
+---
+
+## 🧠 Part 2: Most Similar Words Using Pretrained Embeddings
+
+Find top-k similar words based on cosine similarity using pretrained embeddings:
+
+```
 python top_k.py
+```
 
-Arguments:
+### Arguments:
 
---vocab_file Path to vocab file (default: embeddings/vocab.txt)  
---vectors_file Path to word vectors file (default: embeddings/wordVectors.txt)  
---k Number of most similar words to retrieve (default: 5)
+-   `--vocab_file` (default: `embeddings/vocab.txt`)
+-   `--vectors_file` (default: `embeddings/wordVectors.txt`)
+-   `--k` (default: 5)
 
-Outputs:
-
--   Console output: top-k similar words for several test cases
--   Use this output in part2.pdf
+**Output**: Console printout of top-k similar words for test words (used in `part2.pdf`).
 
 ---
 
-## Part 3 - Window-Based Tagger with Pretrained Embeddings
+## 💬 Part 3: Tagger with Pretrained Word Embeddings
 
-Train model using pretrained embeddings:
-python tagger1.py --task pos --use_pretrained_embeddings
+Use pretrained word embeddings instead of random ones:
 
-The script will automatically load embeddings from:
+```
+python tagger1.py --task pos --output_suffix 3 --use_pretrained_embeddings
+```
 
--   `embeddings/vocab.txt`
--   `embeddings/wordVectors.txt`
-
-Outputs:
-
--   Saved model: `saved_models/model3_pos.pt`
--   Logs: `logs/loss3_pos_train.npy`, etc.
--   Predictions: `predictions/test3.pos` or `test3.ner`
--   Plots: `plots/loss3_pos.png`, `plots/acc3_pos.png`, etc.
+-   Required files:
+    -   `embeddings/vocab.txt`
+    -   `embeddings/wordVectors.txt`
 
 ---
+
+## 🧩 Part 4: Tagger with Subword Features (Prefix + Suffix)
+
+Add prefix and suffix embeddings to improve tagging, optionally combined with pretrained embeddings.
+
+### Subwords + Random Embeddings:
+
+```
+python tagger1.py --task pos --output_suffix 4 --use_subwords
+```
+
+### Subwords + Pretrained Embeddings:
+
+```
+python tagger1.py --task ner --output_suffix 4 --use_subwords --use_pretrained_embeddings
+```
+
+---
+
+## ⚙️ Common Arguments
+
+You can override any of the following (defaults shown):
+
+```
+--task pos
+--output_suffix 1
+--embedding_dim 50
+--hidden_dim 100
+--batch_size 32
+--num_epochs 10
+--learning_rate 0.001
+--window_size 2
+--use_pretrained_embeddings
+--use_subwords
+```
+
+---
+
+## 📁 Outputs
+
+After running, these folders will be populated:
+
+-   `saved_models/`: Trained PyTorch model files  
+    → `model{suffix}_{task}.pt`
+
+-   `logs/`: Training loss and dev accuracy logs  
+    → `loss{suffix}_{task}_train.npy`, `acc{suffix}_{task}_dev.npy`
+
+-   `plots/`: PNG graphs of loss and accuracy  
+    → `loss{suffix}_{task}.png`, `acc{suffix}_{task}.png`
+
+-   `predictions/`: Predicted tags on test set  
+    → `test{suffix}.{task}` (e.g., `test4.pos`)
+
+Use suffixes:
+
+-   `1` → Part 1
+-   `3` → Part 3
+-   `4` → Part 4

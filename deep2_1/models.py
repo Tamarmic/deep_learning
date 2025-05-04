@@ -36,3 +36,36 @@ class WindowTagger(nn.Module):
         hidden = torch.tanh(self.fc1(embedded))  # (batch_size, hidden_dim)
         output = self.fc2(hidden)  # (batch_size, output_dim)
         return output
+
+
+class WindowTaggerSubword(WindowTagger):
+    def __init__(
+        self,
+        vocab_size,
+        prefix_size,
+        suffix_size,
+        embedding_dim,
+        hidden_dim,
+        output_dim,
+        window_size,
+        pretrained_embedding=None,
+    ):
+        super().__init__(
+            vocab_size,
+            embedding_dim,
+            hidden_dim,
+            output_dim,
+            window_size,
+            pretrained_embedding,
+        )
+        self.prefix_embedding = nn.Embedding(prefix_size, embedding_dim, padding_idx=0)
+        self.suffix_embedding = nn.Embedding(suffix_size, embedding_dim, padding_idx=0)
+
+    def forward(self, x, prefix_idx, suffix_idx):
+        word_emb = self.embedding(x)
+        prefix_emb = self.prefix_embedding(prefix_idx)
+        suffix_emb = self.suffix_embedding(suffix_idx)
+        total_emb = word_emb + prefix_emb + suffix_emb
+        total_emb = total_emb.view(total_emb.size(0), -1)
+        hidden = torch.tanh(self.fc1(total_emb))
+        return self.fc2(hidden)

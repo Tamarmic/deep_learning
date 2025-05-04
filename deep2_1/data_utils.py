@@ -3,6 +3,7 @@ import numpy as np
 PAD_TOKEN = "<PAD>"
 UNK_TOKEN = "<UNK>"
 
+
 def read_dataset(file_path, labeled=True):
     """
     Reads a dataset file:
@@ -34,7 +35,6 @@ def read_dataset(file_path, labeled=True):
     return data
 
 
-
 def build_vocab(data):
     word2idx = {PAD_TOKEN: 0, UNK_TOKEN: 1}
     tag2idx = {}
@@ -49,7 +49,6 @@ def build_vocab(data):
                 tag2idx[tag] = len(tag2idx)
 
     return word2idx, tag2idx, idx2tag
-
 
 
 def encode_sentence(sentence, word2idx, tag2idx):
@@ -76,7 +75,7 @@ def load_embeddings(vocab_file, vectors_file):
     Returns: dict {word: vector}
     """
     vocab = []
-    with open(vocab_file, 'r', encoding='utf-8') as f:
+    with open(vocab_file, "r", encoding="utf-8") as f:
         for line in f:
             vocab.append(line.strip().lower())
 
@@ -85,3 +84,34 @@ def load_embeddings(vocab_file, vectors_file):
 
     word_to_vec = {word: vec for word, vec in zip(vocab, vectors)}
     return word_to_vec
+
+
+def build_prefix_suffix_vocab(data):
+    prefix2idx = {PAD_TOKEN: 0, UNK_TOKEN: 1}
+    suffix2idx = {PAD_TOKEN: 0, UNK_TOKEN: 1}
+
+    for sentence in data:
+        for word, _ in sentence:
+            prefix = word[:3]
+            suffix = word[-3:]
+            if prefix not in prefix2idx:
+                prefix2idx[prefix] = len(prefix2idx)
+            if suffix not in suffix2idx:
+                suffix2idx[suffix] = len(suffix2idx)
+    return prefix2idx, suffix2idx
+
+
+def encode_prefix_suffix(sentence, prefix2idx, suffix2idx, labeled=True):
+    """
+    Converts a sentence of (word, tag) into two lists of prefix and suffix indices.
+    Unknown prefixes/suffixes are replaced with UNK index.
+    """
+    if labeled:
+        sentence = [word for word, _ in sentence]
+    prefix_indices = [
+        prefix2idx.get(word[:3], prefix2idx[UNK_TOKEN]) for word in sentence
+    ]
+    suffix_indices = [
+        suffix2idx.get(word[-3:], suffix2idx[UNK_TOKEN]) for word in sentence
+    ]
+    return prefix_indices, suffix_indices
