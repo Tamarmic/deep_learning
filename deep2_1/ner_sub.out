@@ -1,12 +1,12 @@
 nohup: ignoring input
-Epoch 1/10 - Train Loss: 2184.1946 - Dev Accuracy: 0.6304
-Epoch 2/10 - Train Loss: 784.2286 - Dev Accuracy: 0.7318
-Epoch 3/10 - Train Loss: 466.6626 - Dev Accuracy: 0.7409
-Epoch 4/10 - Train Loss: 357.8657 - Dev Accuracy: 0.7648
-Epoch 5/10 - Train Loss: 300.5136 - Dev Accuracy: 0.7630
-Epoch 6/10 - Train Loss: 266.2505 - Dev Accuracy: 0.7569
-Epoch 7/10 - Train Loss: 236.3227 - Dev Accuracy: 0.7661
-Epoch 8/10 - Train Loss: 217.7137 - Dev Accuracy: 0.7617
-Epoch 9/10 - Train Loss: 204.8180 - Dev Accuracy: 0.7722
-Epoch 10/10 - Train Loss: 196.0280 - Dev Accuracy: 0.7694
+Epoch 1/10 - Train Loss: 1822.2639 - Dev Accuracy: 0.6914
+Epoch 2/10 - Train Loss: 722.9417 - Dev Accuracy: 0.7516
+Epoch 3/10 - Train Loss: 484.4807 - Dev Accuracy: 0.7601
+Epoch 4/10 - Train Loss: 369.7144 - Dev Accuracy: 0.7624
+Epoch 5/10 - Train Loss: 301.6424 - Dev Accuracy: 0.7559
+Epoch 6/10 - Train Loss: 263.0089 - Dev Accuracy: 0.7648
+Epoch 7/10 - Train Loss: 222.1803 - Dev Accuracy: 0.7653
+Epoch 8/10 - Train Loss: 196.8622 - Dev Accuracy: 0.7667
+Epoch 9/10 - Train Loss: 181.1283 - Dev Accuracy: 0.7643
+Epoch 10/10 - Train Loss: 171.0919 - Dev Accuracy: 0.7649
 Finished training and prediction for NER!
