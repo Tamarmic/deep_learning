@@ -3,3 +3,11 @@ Loading pre-trained embeddings...
 Epoch 1/10 - Train Loss: 4998.3603 - Dev Accuracy: 0.9528
 Epoch 2/10 - Train Loss: 3501.6413 - Dev Accuracy: 0.9525
 Epoch 3/10 - Train Loss: 3253.3439 - Dev Accuracy: 0.9547
+Epoch 4/10 - Train Loss: 3115.4340 - Dev Accuracy: 0.9541
+Epoch 5/10 - Train Loss: 3008.5649 - Dev Accuracy: 0.9559
+Epoch 6/10 - Train Loss: 2957.3760 - Dev Accuracy: 0.9573
+Epoch 7/10 - Train Loss: 2889.1426 - Dev Accuracy: 0.9571
+Epoch 8/10 - Train Loss: 2845.6121 - Dev Accuracy: 0.9559
+Epoch 9/10 - Train Loss: 2819.9942 - Dev Accuracy: 0.9571
+Epoch 10/10 - Train Loss: 2781.7606 - Dev Accuracy: 0.9555
+Finished training and prediction for POS!
