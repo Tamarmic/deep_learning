@@ -1,0 +1,5 @@
+nohup: ignoring input
+Loading pre-trained embeddings...
+Epoch 1/10 - Train Loss: 4998.3603 - Dev Accuracy: 0.9528
+Epoch 2/10 - Train Loss: 3501.6413 - Dev Accuracy: 0.9525
+Epoch 3/10 - Train Loss: 3253.3439 - Dev Accuracy: 0.9547
