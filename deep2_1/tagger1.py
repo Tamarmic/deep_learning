@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader, TensorDataset
 
 import data_utils
-from models import WindowTagger, WindowTaggerSubword
+from models import WindowTagger, WindowTaggerSubword, WindowTaggerCNNSubword
 
 
 def create_windows(word_indices, window_size=2):
@@ -138,6 +138,8 @@ def train_model(
     prefix2idx=None,
     suffix2idx=None,
     use_subwords=False,
+    char2idx=None,
+    use_char_cnn=False,
     device="cpu",
 ):
     train_losses = []
@@ -205,7 +207,16 @@ def main():
         help="Use pre-trained word embeddings instead of random initialization",
     )
     parser.add_argument("--use_subwords", action="store_true")
+    parser.add_argument("--use_char_cnn", action="store_true")
+    parser.add_argument("--max_word_len", type=int, default=42)
+    parser.add_argument("--char_emb_dim", type=int, default=30)
+    parser.add_argument("--num_filters", type=int, default=30)
+    parser.add_argument("--filter_width", type=int, default=3)
     args = parser.parse_args()
+
+    assert not (
+        args.use_subwords and args.use_char_cnn
+    ), "Cannot use both --use_subwords and --use_char_cnn at the same time."
 
     # Setup
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -245,10 +256,15 @@ def main():
     if args.use_subwords:
         prefix2idx, suffix2idx = data_utils.build_prefix_suffix_vocab(train_data)
 
+    if args.use_char_cnn:
+        char2idx = data_utils.build_char_vocab(train_data)
+
     # Prepare Dataloader
     all_windows, all_tags = [], []
     if args.use_subwords:
         all_prefixes, all_suffixes = [], []
+    if args.use_char_cnn:
+        all_char_windows = []
     for sentence in train_data:
         word_idxs, tag_idxs = data_utils.encode_sentence(sentence, word2idx, tag2idx)
         word_idxs_padded = data_utils.pad_sentence(word_idxs, args.window_size)
@@ -263,8 +279,21 @@ def main():
             padded_suf = data_utils.pad_sentence(suf_idxs, args.window_size)
             all_prefixes += create_windows(padded_pre, args.window_size)
             all_suffixes += create_windows(padded_suf, args.window_size)
+        if args.use_char_cnn:
+            char_matrix = data_utils.encode_chars_per_sentence(
+                sentence, char2idx, max_word_len=args.max_word_len
+            )
+            padded_chars = data_utils.pad_char_sentence(char_matrix, args.window_size)
+            char_windows = create_windows(padded_chars, args.window_size)
+            all_char_windows.extend(char_windows)
 
-    if args.use_subwords:
+    if args.use_char_cnn:
+        train_dataset = TensorDataset(
+            torch.tensor(all_windows),
+            torch.tensor(all_char_windows),
+            torch.tensor(all_tags),
+        )
+    elif args.use_subwords:
         train_dataset = TensorDataset(
             torch.tensor(all_windows),
             torch.tensor(all_prefixes),
@@ -276,8 +305,21 @@ def main():
 
     train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
 
-    # Prepare model
-    if args.use_subwords:
+    if args.use_char_cnn:
+        model = WindowTaggerCNNSubword(
+            vocab_size=len(word2idx),
+            char_vocab_size=len(char2idx),
+            embedding_dim=args.embedding_dim,
+            char_emb_dim=args.char_emb_dim,
+            num_filters=args,
+            filter_width=args.filter_width,
+            hidden_dim=args.hidden_dim,
+            output_dim=len(tag2idx),
+            window_size=args.window_size,
+            max_word_len=args.max_word_len,
+            pretrained_embedding=embedding_matrix,
+        ).to(device)
+    elif args.use_subwords:
         model = WindowTaggerSubword(
             vocab_size=len(word2idx),
             prefix_size=len(prefix2idx),
@@ -329,8 +371,8 @@ def main():
         output_file_name += "+pre"
     if args.use_subwords:
         output_file_name += "+sub"
-    # if args.use_cnn_subwords:
-    #     output_file_name += "+cnn"
+    if args.use_char_cnn:
+        output_file_name += "+cnn"
 
     # Save model and logs
     torch.save(model.state_dict(), f"saved_models/model_{output_file_name}.pt")

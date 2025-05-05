@@ -115,3 +115,43 @@ def encode_prefix_suffix(sentence, prefix2idx, suffix2idx, labeled=True):
         suffix2idx.get(word[-3:], suffix2idx[UNK_TOKEN]) for word in sentence
     ]
     return prefix_indices, suffix_indices
+
+
+def build_char_vocab(data):
+    char2idx = {PAD_TOKEN: 0, UNK_TOKEN: 1}
+    for sentence in data:
+        for word, _ in sentence:
+            for ch in word:
+                if ch not in char2idx:
+                    char2idx[ch] = len(char2idx)
+    return char2idx
+
+
+def encode_chars_per_sentence(sentence, char2idx, max_word_len=42, labeled=True):
+    if labeled:
+        words = [word for word, _ in sentence]
+    else:
+        words = sentence
+
+    encoded = []
+    for word in words:
+        char_ids = [char2idx.get(c, char2idx[UNK_TOKEN]) for c in word]
+        if len(char_ids) < max_word_len:
+            char_ids += [char2idx[PAD_TOKEN]] * (max_word_len - len(char_ids))
+        else:
+            char_ids = char_ids[:max_word_len]
+        encoded.append(char_ids)
+    return encoded
+
+
+def pad_char_sentence(char_matrix, window_size):
+    """
+    Pads a list of char-indexed words for window models.
+    Input: list of words, where each word = list of char indices
+    Output: same format, padded with <PAD> words of same shape
+    """
+    pad_word = [0] * len(
+        char_matrix[0]
+    )  # assumes all words have been padded to max_word_len
+    pad = [pad_word] * window_size
+    return pad + char_matrix + pad
