@@ -1,0 +1,13 @@
+nohup: ignoring input
+Loading pre-trained embeddings...
+Epoch 1/10 - Train Loss: 1624.5098 - Dev Accuracy: 0.7005
+Epoch 2/10 - Train Loss: 663.1518 - Dev Accuracy: 0.7524
+Epoch 3/10 - Train Loss: 456.9337 - Dev Accuracy: 0.7693
+Epoch 4/10 - Train Loss: 351.8089 - Dev Accuracy: 0.7677
+Epoch 5/10 - Train Loss: 294.3756 - Dev Accuracy: 0.7604
+Epoch 6/10 - Train Loss: 247.8498 - Dev Accuracy: 0.7724
+Epoch 7/10 - Train Loss: 218.6438 - Dev Accuracy: 0.7598
+Epoch 8/10 - Train Loss: 194.6672 - Dev Accuracy: 0.7716
+Epoch 9/10 - Train Loss: 181.6926 - Dev Accuracy: 0.7718
+Epoch 10/10 - Train Loss: 161.1022 - Dev Accuracy: 0.7701
+Finished training and prediction for NER!

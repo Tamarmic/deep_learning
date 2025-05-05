@@ -114,8 +114,10 @@ def predict_test(
                     suf_windows = create_windows(suf_padded, window_size)
                     pre_tensor = torch.tensor(pre_windows).to(device)
                     suf_tensor = torch.tensor(suf_windows).to(device)
-                    preds = torch.argmax(model(X, pre_tensor, suf_tensor), dim=1)
-                preds = torch.argmax(model(X), dim=1)
+                    logits = model(X, pre_tensor, suf_tensor)
+                else:
+                    logits = model(X)
+                preds = torch.argmax(logits, dim=1)
                 for word, pred in zip(sentence, preds):
                     fout.write(f"{word} {idx2tag[pred.item()]}\n")
                 fout.write("\n")
