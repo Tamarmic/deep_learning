@@ -1,133 +1,199 @@
-# Assignment 2 – Window-Based Sequence Tagger
+# 🧠 Assignment 2 – Neural Window-Based Tagger & Char-Level Language Model
 
-This project implements a neural window-based tagger for POS and NER, with extensions including:
-
--   Pretrained word embeddings
--   Subword features (prefixes + suffixes)
--   Word similarity via pretrained vectors
+This project implements a neural **window-based tagger** for Part-of-Speech (POS) and Named Entity Recognition (NER), along with several enhancements and a separate **character-level language model**.
 
 ---
 
-## 📦 Requirements
+## 📦 Installation Requirements
 
--   Python 3
+This project requires the following Python packages:
+
+-   Python
 -   PyTorch
 -   NumPy
 -   Matplotlib
 
-Install missing packages:
+To install them:
 
-```
+```bash
 pip install torch numpy matplotlib
 ```
 
 ---
 
-## 🧪 Part 1: Window-Based Tagger (Random Embeddings)
+## 🧪 Part 1 – Basic Window-Based Tagger (Random Embeddings)
 
-Train and evaluate a simple window-based tagger using random word embeddings.
+Trains a window-based feedforward neural tagger using **randomly initialized** word embeddings.
 
-### POS Tagging:
+### 🏃‍♂️ Run:
 
-```
+```bash
 python tagger1.py --task pos --part 1
 ```
 
-### NER Tagging:
+or for NER:
 
-```
+```bash
 python tagger1.py --task ner --part 1
 ```
 
 ---
 
-## 🧠 Part 2: Most Similar Words Using Pretrained Embeddings
+## 🧠 Part 2 – Word Similarity with Pretrained Embeddings
 
-Find top-k similar words based on cosine similarity using pretrained embeddings:
+Computes top-K most similar words using cosine similarity on pretrained embeddings.
 
-```
+### 🏃‍♂️ Run:
+
+```bash
 python top_k.py
 ```
 
-### Arguments:
+### 🔧 Options:
 
--   `--vocab_file` (default: `embeddings/vocab.txt`)
--   `--vectors_file` (default: `embeddings/wordVectors.txt`)
--   `--k` (default: 5)
+-   `--vocab_file` Path to vocab (default: `embeddings/vocab.txt`)
+-   `--vectors_file` Path to pretrained vectors (default: `embeddings/wordVectors.txt`)
+-   `--k` Number of top similar words to return (default: 5)
 
-**Output**: Console printout of top-k similar words for test words (used in `part2.pdf`).
+📤 Output is printed to the console for copy-pasting into `part2.pdf`.
 
 ---
 
-## 💬 Part 3: Tagger with Pretrained Word Embeddings
+## 💬 Part 3 – Tagger with Pretrained Word Embeddings
 
-Use pretrained word embeddings instead of random ones:
+Uses pretrained word embeddings instead of random initialization for word vectors.
 
-```
+### 🏃‍♂️ Run:
+
+```bash
 python tagger1.py --task pos --part 3 --use_pretrained_embeddings
 ```
 
--   Required files:
-    -   `embeddings/vocab.txt`
-    -   `embeddings/wordVectors.txt`
+### 📂 Required Files:
+
+-   `embeddings/vocab.txt`
+-   `embeddings/wordVectors.txt`
 
 ---
 
-## 🧩 Part 4: Tagger with Subword Features (Prefix + Suffix)
+## 🧩 Part 4 – Tagger with Subword Prefix + Suffix Features
 
-Add prefix and suffix embeddings to improve tagging, optionally combined with pretrained embeddings.
+Adds prefix and suffix embeddings per word to improve tagging robustness.
 
-### Subwords + Random Embeddings:
+### 🏃‍♂️ Subwords + Random Embeddings:
 
-```
+```bash
 python tagger1.py --task pos --part 4 --use_subwords
 ```
 
-### Subwords + Pretrained Embeddings:
+### 🧠 Subwords + Pretrained Embeddings:
 
-```
+```bash
 python tagger1.py --task ner --part 4 --use_subwords --use_pretrained_embeddings
 ```
 
 ---
 
-## ⚙️ Common Arguments
+## 🧬 Part 5 – CNN Subword Tagger (Ma & Hovy Style)
 
-You can override any of the following (defaults shown):
+Extracts subword features using a CNN over character sequences for each word.
 
+### 🏃‍♂️ CNN + Random Embeddings:
+
+```bash
+python tagger1.py --task pos --part 5 --use_cnn_subwords
 ```
---task pos
---part 1
---embedding_dim 50
---hidden_dim 100
---batch_size 32
---num_epochs 10
---learning_rate 0.001
---window_size 2
---use_pretrained_embeddings
---use_subwords
+
+### 🧠 CNN + Pretrained Embeddings:
+
+```bash
+python tagger1.py --task ner --part 5 --use_cnn_subwords --use_pretrained_embeddings
+```
+
+⚠️ **Important**:  
+You **cannot use** both `--use_subwords` and `--use_cnn_subwords` simultaneously.
+
+---
+
+## ✍️ Part 6 – Character-Level N-gram Language Model
+
+Trains a character-level n-gram language model on a plain text file (e.g., `eng.txt`).  
+Predicts the next character from the previous `k` characters using an MLP.
+
+### 🏃‍♂️ Run:
+
+```bash
+python char_lm.py --file eng.txt --k 5 --sample_prefix "the "
+```
+
+### 🔧 Options:
+
+-   `--file` Path to training text file (default: `eng.txt`)
+-   `--k` Context length (default: 5)
+-   `--emb_dim` Character embedding dim (default: 30)
+-   `--hidden_dim` Hidden layer size (default: 100)
+-   `--num_epochs` Number of epochs (default: 10)
+-   `--batch_size` Batch size (default: 128)
+-   `--learning_rate` Learning rate (default: 0.001)
+-   `--sample_every` Interval to generate samples (default: 2)
+-   `--sample_prefix` Prompt used when generating text
+-   `--sample_length` Number of characters to sample (default: 100)
+
+📤 Outputs:
+
+-   Training loss curve in `charlm_outputs/loss_char_lm.png`
+-   Saved model in `charlm_outputs/char_lm.pt`
+
+---
+
+## ⚙️ Global Arguments (For `tagger1.py`)
+
+```bash
+--task pos|ner               # Required task
+--part 1|3|4|5               # Required part
+--embedding_dim 50          # Word embedding size
+--hidden_dim 100            # Hidden layer size
+--batch_size 32             # Batch size
+--num_epochs 10             # Number of training epochs
+--learning_rate 0.001       # Learning rate
+--weight_decay 1e-5         # L2 regularization
+--window_size 2             # Context window on each side
+--use_pretrained_embeddings # Use pretrained word vectors
+--use_subwords              # Enable prefix+suffix embeddings
+--use_cnn_subwords          # Enable CNN over characters (Part 5)
 ```
 
 ---
 
-## 📁 Outputs
+## 📁 Output Files
 
-After running, these folders will be populated:
+After each run, the following folders are populated:
 
--   `saved_models/`: Trained PyTorch model files  
-    → `model{suffix}_{task}.pt`
+-   `saved_models/` – PyTorch model checkpoints  
+    → `model_{task}_{suffix}.pt`
 
--   `logs/`: Training loss and dev accuracy logs  
-    → `loss{suffix}_{task}_train.npy`, `acc{suffix}_{task}_dev.npy`
+-   `logs/` – Training logs  
+    → `loss_{task}_{suffix}_train.npy`, `acc_{task}_{suffix}_dev.npy`
 
--   `plots/`: PNG graphs of loss and accuracy  
-    → `loss{suffix}_{task}.png`, `acc{suffix}_{task}.png`
+-   `plots/` – Training/validation curves  
+    → `loss_{task}_{suffix}.png`, `acc_{task}_{suffix}.png`
 
--   `predictions/`: Predicted tags on test set  
-    → `test{suffix}.{task}` (e.g., `test4.pos`)
+-   `predictions/` – Tag predictions for test set  
+    → `test_{task}_{suffix}.txt` (e.g., `test_ner_p5+pre+cnn.txt`)
 
-Use suffixes:
+The `{suffix}` is auto-generated using:
 
--   `1` → Part 1
--   `3` → Part 3
--   `4` → Part 4
+-   `p1`, `p3`, `p4`, `p5` = part number
+-   `+pre` = pretrained embeddings
+-   `+sub` = subword prefixes/suffixes
+-   `+cnn` = CNN subwords
+
+---
+
+## ✅ Notes
+
+-   All data should be placed under folders like `pos/train`, `pos/dev`, `pos/test`, `ner/train`, etc.
+-   Embeddings should be formatted to match `vocab.txt` and `wordVectors.txt`.
+-   Dev accuracy is computed during training and saved in logs.
+
+---
