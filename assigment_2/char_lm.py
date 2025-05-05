@@ -44,7 +44,7 @@ def plot_loss(train_losses, output_path):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--file", type=str, default="lm-data/eng-data/input.txt")
-    parser.add_argument("--k", type=int, default=5)
+    parser.add_argument("--k", type=int, default=20)
     parser.add_argument("--emb_dim", type=int, default=30)
     parser.add_argument("--hidden_dim", type=int, default=100)
     parser.add_argument("--batch_size", type=int, default=32)
