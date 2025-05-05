@@ -187,7 +187,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--task", type=str, choices=["pos", "ner"], required=True)
     parser.add_argument(
-        "--output_suffix",
+        "--part",
         type=str,
         required=True,
         help="e.g., 1 for part1, 3 for part3, 4 for part4",
@@ -322,29 +322,37 @@ def main():
         device,
     )
 
-    file_suffix = args.output_suffix
+    output_file_name = f"{args.task}_p{args.part}"
+
+    # Add modifiers
+    if args.use_pretrained_embeddings:
+        output_file_name += "+pre"
+    if args.use_subwords:
+        output_file_name += "+sub"
+    # if args.use_cnn_subwords:
+    #     output_file_name += "+cnn"
 
     # Save model and logs
-    torch.save(model.state_dict(), f"saved_models/model{file_suffix}_{args.task}.pt")
-    np.save(f"logs/loss{file_suffix}_{args.task}_train.npy", np.array(train_losses))
-    np.save(f"logs/acc{file_suffix}_{args.task}_dev.npy", np.array(dev_accuracies))
+    torch.save(model.state_dict(), f"saved_models/model_{output_file_name}.pt")
+    np.save(f"logs/loss_{output_file_name}_train.npy", np.array(train_losses))
+    np.save(f"logs/acc_{output_file_name}_dev.npy", np.array(dev_accuracies))
 
     # Plot
     plot_and_save(
         train_losses,
         f"Training Loss ({args.task})",
         "Loss",
-        f"plots/loss{file_suffix}_{args.task}.png",
+        f"plots/loss_{output_file_name}.png",
     )
     plot_and_save(
         dev_accuracies,
         f"Dev Accuracy ({args.task})",
         "Accuracy",
-        f"plots/acc{file_suffix}_{args.task}.png",
+        f"plots/acc_{output_file_name}.png",
     )
 
     # Predict
-    output_file = f"predictions/test{file_suffix}.{args.task}"
+    output_file = f"predictions/test_{output_file_name}"
     predict_test(
         model,
         test_data,
