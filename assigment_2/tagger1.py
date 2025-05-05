@@ -342,7 +342,7 @@ def main():
             char_vocab_size=len(char2idx),
             embedding_dim=args.embedding_dim,
             char_emb_dim=args.char_emb_dim,
-            num_filters=args,
+            num_filters=args.num_filters,
             filter_width=args.filter_width,
             hidden_dim=args.hidden_dim,
             output_dim=len(tag2idx),
