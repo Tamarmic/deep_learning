@@ -136,3 +136,17 @@ class WindowTaggerCNNSubword(nn.Module):
 
         hidden = torch.tanh(self.fc1(combined))  # (B, hidden_dim)
         return self.fc2(hidden)
+
+
+class CharNgramLM(nn.Module):
+    def __init__(self, vocab_size, emb_dim, hidden_dim, context_size):
+        super().__init__()
+        self.embedding = nn.Embedding(vocab_size, emb_dim)
+        self.fc1 = nn.Linear(context_size * emb_dim, hidden_dim)
+        self.fc2 = nn.Linear(hidden_dim, vocab_size)
+
+    def forward(self, x):
+        emb = self.embedding(x)  # (batch_size, k, emb_dim)
+        emb = emb.view(emb.size(0), -1)
+        h = torch.tanh(self.fc1(emb))
+        return self.fc2(h)

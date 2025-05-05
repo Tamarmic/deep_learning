@@ -117,14 +117,14 @@ def encode_prefix_suffix(sentence, prefix2idx, suffix2idx, labeled=True):
     return prefix_indices, suffix_indices
 
 
-def build_char_vocab(data):
+def build_char_vocab(text):
+    chars = sorted(set(text))
     char2idx = {PAD_TOKEN: 0, UNK_TOKEN: 1}
-    for sentence in data:
-        for word, _ in sentence:
-            for ch in word:
-                if ch not in char2idx:
-                    char2idx[ch] = len(char2idx)
-    return char2idx
+    for c in chars:
+        if c not in char2idx:
+            char2idx[c] = len(char2idx)
+    idx2char = {i: c for c, i in char2idx.items()}
+    return char2idx, idx2char
 
 
 def encode_chars_per_sentence(sentence, char2idx, max_word_len=42, labeled=True):
@@ -150,3 +150,20 @@ def pad_char_sentence(char_matrix, window_size):
     )  # assumes all words have been padded to max_word_len
     pad = [pad_word] * window_size
     return pad + char_matrix + pad
+
+
+def prepare_char_ngram_data(text, char2idx, k):
+    X = []
+    Y = []
+
+    for i in range(k, len(text)):
+        context = text[i - k : i]
+        target = text[i]
+
+        x_indices = [char2idx.get(c, char2idx[UNK_TOKEN]) for c in context]
+        y_index = char2idx.get(target, char2idx[UNK_TOKEN])
+
+        X.append(x_indices)
+        Y.append(y_index)
+
+    return X, Y
