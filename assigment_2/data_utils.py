@@ -145,11 +145,6 @@ def encode_chars_per_sentence(sentence, char2idx, max_word_len=42, labeled=True)
 
 
 def pad_char_sentence(char_matrix, window_size):
-    """
-    Pads a list of char-indexed words for window models.
-    Input: list of words, where each word = list of char indices
-    Output: same format, padded with <PAD> words of same shape
-    """
     pad_word = [0] * len(
         char_matrix[0]
     )  # assumes all words have been padded to max_word_len

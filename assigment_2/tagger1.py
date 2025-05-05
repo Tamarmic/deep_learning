@@ -40,6 +40,9 @@ def evaluate_model(
     prefix2idx=None,
     suffix2idx=None,
     use_subwords=False,
+    char2idx=None,
+    max_word_len=42,
+    use_char_cnn=False,
     device="cpu",
 ):
     model.eval()
@@ -54,7 +57,15 @@ def evaluate_model(
             windows = create_windows(word_idxs_padded, window_size)
 
             X = torch.tensor(windows).to(device)
-            if use_subwords:
+            if use_char_cnn:
+                char_matrix = data_utils.encode_chars_per_sentence(
+                    sentence, char2idx, max_word_len=max_word_len
+                )
+                padded_chars = data_utils.pad_char_sentence(char_matrix, window_size)
+                char_windows = create_windows(padded_chars, window_size)
+                char_tensor = torch.tensor(char_windows).to(device)
+                logits = model(X, char_tensor)
+            elif use_subwords:
                 pre_idxs, suf_idxs = data_utils.encode_prefix_suffix(
                     sentence, prefix2idx, suffix2idx
                 )
@@ -91,6 +102,9 @@ def predict_test(
     prefix2idx=None,
     suffix2idx=None,
     use_subwords=False,
+    char2idx=None,
+    max_word_len=42,
+    use_char_cnn=False,
     device="cpu",
 ):
     model.eval()
@@ -104,7 +118,17 @@ def predict_test(
                 padded = data_utils.pad_sentence(word_idxs, window_size)
                 windows = create_windows(padded, window_size)
                 X = torch.tensor(windows).to(device)
-                if use_subwords:
+                if use_char_cnn:
+                    char_matrix = data_utils.encode_chars_per_sentence(
+                        sentence, char2idx, max_word_len=max_word_len, labeled=False
+                    )
+                    padded_chars = data_utils.pad_char_sentence(
+                        char_matrix, window_size
+                    )
+                    char_windows = create_windows(padded_chars, window_size)
+                    char_tensor = torch.tensor(char_windows).to(device)
+                    logits = model(X, char_tensor)
+                elif use_subwords:
                     pre_idxs, suf_idxs = data_utils.encode_prefix_suffix(
                         sentence, prefix2idx, suffix2idx, labeled=False
                     )
@@ -139,6 +163,7 @@ def train_model(
     suffix2idx=None,
     use_subwords=False,
     char2idx=None,
+    max_word_len=42,
     use_char_cnn=False,
     device="cpu",
 ):
@@ -151,7 +176,10 @@ def train_model(
 
         for batch in train_loader:
             optimizer.zero_grad()
-            if use_subwords:
+            if use_char_cnn:
+                X, C, Y = [b.to(device) for b in batch]
+                logits = model(X, C)
+            elif use_subwords:
                 X, P, S, Y = [b.to(device) for b in batch]
                 logits = model(X, P, S)
             else:
@@ -163,17 +191,20 @@ def train_model(
             epoch_loss += loss.item()
 
         dev_acc = evaluate_model(
-            model,
-            dev_data,
-            word2idx,
-            tag2idx,
-            idx2tag,
-            task_type,
-            window_size,
-            prefix2idx,
-            suffix2idx,
-            use_subwords,
-            device,
+            model=model,
+            data=dev_data,
+            word2idx=word2idx,
+            tag2idx=tag2idx,
+            idx2tag=idx2tag,
+            task_type=task_type,
+            window_size=window_size,
+            prefix2idx=prefix2idx,
+            suffix2idx=suffix2idx,
+            use_subwords=use_subwords,
+            char2idx=char2idx,
+            max_word_len=max_word_len,
+            use_char_cnn=use_char_cnn,
+            device=device,
         )
         print(
             f"Epoch {epoch+1}/{num_epochs} - Train Loss: {epoch_loss:.4f} - Dev Accuracy: {dev_acc:.4f}"
@@ -347,21 +378,24 @@ def main():
 
     # Train
     train_losses, dev_accuracies = train_model(
-        model,
-        train_loader,
-        dev_data,
-        word2idx,
-        tag2idx,
-        idx2tag,
-        optimizer,
-        loss_fn,
-        args.num_epochs,
-        args.task,
-        args.window_size,
-        prefix2idx if args.use_subwords else None,
-        suffix2idx if args.use_subwords else None,
-        args.use_subwords,
-        device,
+        model=model,
+        train_loader=train_loader,
+        dev_data=dev_data,
+        word2idx=word2idx,
+        tag2idx=tag2idx,
+        idx2tag=idx2tag,
+        optimizer=optimizer,
+        loss_fn=loss_fn,
+        num_epochs=args.num_epochs,
+        task_type=args.task,
+        window_size=args.window_size,
+        prefix2idx=prefix2idx if args.use_subwords else None,
+        suffix2idx=suffix2idx if args.use_subwords else None,
+        use_subwords=args.use_subwords,
+        char2idx=char2idx if args.use_char_cnn else None,
+        max_word_len=args.max_word_len,
+        use_char_cnn=args.use_char_cnn,
+        device=device,
     )
 
     output_file_name = f"{args.task}_p{args.part}"
@@ -396,16 +430,19 @@ def main():
     # Predict
     output_file = f"predictions/test_{output_file_name}"
     predict_test(
-        model,
-        test_data,
-        word2idx,
-        idx2tag,
-        output_file,
-        args.window_size,
-        prefix2idx if args.use_subwords else None,
-        suffix2idx if args.use_subwords else None,
-        args.use_subwords,
-        device,
+        model=model,
+        data=test_data,
+        word2idx=word2idx,
+        idx2tag=idx2tag,
+        output_file=output_file,
+        window_size=args.window_size,
+        prefix2idx=prefix2idx if args.use_subwords else None,
+        suffix2idx=suffix2idx if args.use_subwords else None,
+        use_subwords=args.use_subwords,
+        char2idx=char2idx if args.use_char_cnn else None,
+        max_word_len=args.max_word_len,
+        use_char_cnn=args.use_char_cnn,
+        device=device,
     )
 
     print(f"Finished training and prediction for {args.task.upper()}!")
