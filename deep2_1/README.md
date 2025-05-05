@@ -30,13 +30,13 @@ Train and evaluate a simple window-based tagger using random word embeddings.
 ### POS Tagging:
 
 ```
-python tagger1.py --task pos --output_suffix 1
+python tagger1.py --task pos --part 1
 ```
 
 ### NER Tagging:
 
 ```
-python tagger1.py --task ner --output_suffix 1
+python tagger1.py --task ner --part 1
 ```
 
 ---
@@ -64,7 +64,7 @@ python top_k.py
 Use pretrained word embeddings instead of random ones:
 
 ```
-python tagger1.py --task pos --output_suffix 3 --use_pretrained_embeddings
+python tagger1.py --task pos --part 3 --use_pretrained_embeddings
 ```
 
 -   Required files:
@@ -80,13 +80,13 @@ Add prefix and suffix embeddings to improve tagging, optionally combined with pr
 ### Subwords + Random Embeddings:
 
 ```
-python tagger1.py --task pos --output_suffix 4 --use_subwords
+python tagger1.py --task pos --part 4 --use_subwords
 ```
 
 ### Subwords + Pretrained Embeddings:
 
 ```
-python tagger1.py --task ner --output_suffix 4 --use_subwords --use_pretrained_embeddings
+python tagger1.py --task ner --part 4 --use_subwords --use_pretrained_embeddings
 ```
 
 ---
@@ -97,7 +97,7 @@ You can override any of the following (defaults shown):
 
 ```
 --task pos
---output_suffix 1
+--part 1
 --embedding_dim 50
 --hidden_dim 100
 --batch_size 32
