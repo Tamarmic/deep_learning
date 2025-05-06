@@ -7,7 +7,12 @@ from torch.utils.data import TensorDataset, DataLoader
 import numpy as np
 import matplotlib.pyplot as plt
 
-from data_utils import build_char_vocab, prepare_char_ngram_data, PAD_TOKEN, UNK_TOKEN
+from data_utils import (
+    build_char_vocab_from_text,
+    prepare_char_ngram_data,
+    PAD_TOKEN,
+    UNK_TOKEN,
+)
 from models import CharNgramLM
 
 
@@ -44,15 +49,15 @@ def plot_loss(train_losses, output_path):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--file", type=str, default="lm-data/eng-data/input.txt")
-    parser.add_argument("--k", type=int, default=50)
-    parser.add_argument("--emb_dim", type=int, default=30)
+    parser.add_argument("--k", type=int, default=20)
+    parser.add_argument("--emb_dim", type=int, default=40)
     parser.add_argument("--hidden_dim", type=int, default=100)
     parser.add_argument("--batch_size", type=int, default=128)
     parser.add_argument("--num_epochs", type=int, default=10)
     parser.add_argument("--learning_rate", type=float, default=1e-3)
     parser.add_argument("--weight_decay", type=float, default=1e-5)
     parser.add_argument("--sample_every", type=int, default=2)
-    parser.add_argument("--sample_prefix", type=str, default="the ")
+    parser.add_argument("--sample_prefix", type=str, default="The ")
     parser.add_argument("--sample_length", type=int, default=100)
     args = parser.parse_args()
 
@@ -63,7 +68,7 @@ def main():
     with open(args.file, "r", encoding="utf8") as f:
         text = f.read()
 
-    char2idx, idx2char = build_char_vocab(text)
+    char2idx, idx2char = build_char_vocab_from_text(text)
     X, Y = prepare_char_ngram_data(text, char2idx, args.k)
     dataset = TensorDataset(torch.tensor(X), torch.tensor(Y))
     loader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True)

@@ -288,7 +288,7 @@ def main():
         prefix2idx, suffix2idx = data_utils.build_prefix_suffix_vocab(train_data)
 
     if args.use_char_cnn:
-        char2idx, _ = data_utils.build_char_vocab(train_data)
+        char2idx = data_utils.build_char_vocab(train_data)
 
     # Prepare Dataloader
     all_windows, all_tags = [], []

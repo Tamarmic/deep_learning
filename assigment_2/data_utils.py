@@ -117,7 +117,18 @@ def encode_prefix_suffix(sentence, prefix2idx, suffix2idx, labeled=True):
     return prefix_indices, suffix_indices
 
 
-def build_char_vocab(text):
+def build_char_vocab(data):
+    """Build character vocabulary from training data."""
+    char2idx = {PAD_TOKEN: 0, UNK_TOKEN: 1}
+    for sentence in data:
+        for word, _ in sentence:
+            for char in word:
+                if char not in char2idx:
+                    char2idx[char] = len(char2idx)
+    return char2idx
+
+
+def build_char_vocab_from_text(text):
     chars = sorted(set(text))
     char2idx = {PAD_TOKEN: 0, UNK_TOKEN: 1}
     for c in chars:
