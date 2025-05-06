@@ -7,7 +7,12 @@ from torch.utils.data import TensorDataset, DataLoader
 import numpy as np
 import matplotlib.pyplot as plt
 
-from data_utils import build_char_vocab, prepare_char_ngram_data, PAD_TOKEN, UNK_TOKEN
+from data_utils import (
+    build_char_vocab_from_text,
+    prepare_char_ngram_data,
+    PAD_TOKEN,
+    UNK_TOKEN,
+)
 from models import CharNgramLM
 
 
@@ -63,7 +68,7 @@ def main():
     with open(args.file, "r", encoding="utf8") as f:
         text = f.read()
 
-    char2idx, idx2char = build_char_vocab(text)
+    char2idx, idx2char = build_char_vocab_from_text(text)
     X, Y = prepare_char_ngram_data(text, char2idx, args.k)
     dataset = TensorDataset(torch.tensor(X), torch.tensor(Y))
     loader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True)
