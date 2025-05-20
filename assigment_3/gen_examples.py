@@ -48,16 +48,55 @@ def write_examples(filename, examples):
         for example in examples:
             f.write(example + "\n")
 
+
+###########################################################################################
+
+def write_labeled_split(pos_samples, neg_samples, train_file, test_file, train_ratio=0.8):
+    # Create labeled dataset
+    labeled = [(s, 1) for s in pos_samples] + [(s, 0) for s in neg_samples]
+    random.shuffle(labeled)
+
+    split_idx = int(len(labeled) * train_ratio)
+    train_data = labeled[:split_idx]
+    test_data = labeled[split_idx:]
+
+    with open(train_file, "w") as f:
+        for seq, label in train_data:
+            f.write(f"{seq}\t{label}\n")
+
+    with open(test_file, "w") as f:
+        for seq, label in test_data:
+            f.write(f"{seq}\t{label}\n")
+
+# def main():
+#     os.makedirs("data", exist_ok=True)
+#
+#     pos_samples = [generate_positive_example() for _ in range(500)]
+#     neg_samples = [generate_negative_example() for _ in range(500)]
+#
+#     split_and_save(pos_samples, "pos", "data")
+#     split_and_save(neg_samples, "neg", "data")
+#
+#     print("Train/test split complete. Files written to ./data/")
+
+# if __name__ == "__main__":
+#     main()
+
+###########################################################################################
+
 def main():
     os.makedirs("data", exist_ok=True)
 
-    pos_samples = [generate_positive_example() for _ in range(500)]
-    neg_samples = [generate_negative_example() for _ in range(500)]
+    pos_samples = [generate_positive_example() for _ in range(5000)]
+    neg_samples = [generate_negative_example() for _ in range(5000)]
 
-    write_examples("data/pos_examples", pos_samples)
-    write_examples("data/neg_examples", neg_samples)
+    # write_examples("data/pos_examples", pos_samples)
+    # write_examples("data/neg_examples", neg_samples)
 
-    print("Data generation complete. Files written to ./data/")
+    write_labeled_split(pos_samples, neg_samples, "data/train.txt", "data/test.txt")
+    print("Generated train.txt and test.txt with labeled sequences.")
+
+
 
 if __name__ == "__main__":
     main()
