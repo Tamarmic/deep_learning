@@ -53,28 +53,29 @@ def collate_fn(batch):
 # LSTMCell-Based Model
 # --------------------------
 class LSTMAcceptor(nn.Module):
-    def __init__(self, vocab_size, emb_dim, hidden_dim):
+    def __init__(self, vocab_size, emb_dim, hidden_dim,B):
         super().__init__()
-        self.embedding = nn.Embedding(vocab_size, emb_dim, padding_idx=0)
+        self.embedding = nn.Embedding(vocab_size, emb_dim)
         self.lstm_cell = nn.LSTMCell(emb_dim, hidden_dim)
         self.classifier = nn.Sequential(
-            nn.Linear(hidden_dim, 64),
-            nn.ReLU(),
-            nn.Linear(64, 1)
+            nn.Linear(hidden_dim, 1),
+            # nn.ReLU(),
+            # nn.Linear(16, 1)
         )
 
     def forward(self, x, lengths):
         emb = self.embedding(x)  # (B, T, D)
         B, T, D = emb.size()
-        h_t = torch.zeros(B, self.lstm_cell.hidden_size, device=x.device)
-        c_t = torch.zeros(B, self.lstm_cell.hidden_size, device=x.device)
+
+        h_t = torch.zeros(B, self.lstm_cell.hidden_size)
+        c_t = torch.zeros(B, self.lstm_cell.hidden_size)
 
         for t in range(T):
             emb_t = emb[:, t]  # (B, D)
             h_t, c_t = self.lstm_cell(emb_t, (h_t, c_t))
 
-        return self.classifier(h_t).squeeze(1)
 
+        return self.classifier(h_t).squeeze(-1)
 # --------------------------
 # Training & Evaluation
 # --------------------------
@@ -87,6 +88,7 @@ def train(model, dataloader, optimizer, loss_fn, device):
         logits = model(x, lengths)
         loss = loss_fn(logits, y)
         loss.backward()
+        # print("hi")
         optimizer.step()
         total_loss += loss.item()
     return total_loss / len(dataloader)
@@ -113,8 +115,8 @@ def main():
     parser.add_argument("--embedding_dim", type=int, default=16)
     parser.add_argument("--hidden_dim", type=int, default=128)
     parser.add_argument("--batch_size", type=int, default=64)
-    parser.add_argument("--num_epochs", type=int, default=10)
-    parser.add_argument("--learning_rate", type=float, default=0.001)
+    parser.add_argument("--num_epochs", type=int, default=100)
+    parser.add_argument("--learning_rate", type=float, default=0.1)
     args = parser.parse_args()
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -130,7 +132,7 @@ def main():
     train_loader = DataLoader(train_data, batch_size=args.batch_size, shuffle=True, collate_fn=collate_fn)
     test_loader = DataLoader(test_data, batch_size=args.batch_size, shuffle=False, collate_fn=collate_fn)
 
-    model = LSTMAcceptor(len(char2idx), args.embedding_dim, args.hidden_dim).to(device)
+    model = LSTMAcceptor(len(char2idx), args.embedding_dim, args.hidden_dim, args.batch_size).to(device)
     optimizer = optim.Adam(model.parameters(), lr=args.learning_rate, weight_decay=1e-5)
     loss_fn = nn.BCEWithLogitsLoss()
 
