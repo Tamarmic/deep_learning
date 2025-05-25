@@ -58,24 +58,34 @@ class LSTMAcceptor(nn.Module):
         self.embedding = nn.Embedding(vocab_size, emb_dim)
         self.lstm_cell = nn.LSTMCell(emb_dim, hidden_dim)
         self.classifier = nn.Sequential(
-            nn.Linear(hidden_dim, 1),
-            # nn.ReLU(),
-            # nn.Linear(16, 1)
+            nn.Linear(hidden_dim, 16),
+            nn.ReLU(),
+            nn.Linear(16, 1)
         )
 
     def forward(self, x, lengths):
         emb = self.embedding(x)  # (B, T, D)
         B, T, D = emb.size()
+        device = x.device
 
-        h_t = torch.zeros(B, self.lstm_cell.hidden_size)
-        c_t = torch.zeros(B, self.lstm_cell.hidden_size)
+        h_t = torch.zeros(B, self.lstm_cell.hidden_size, device=device)
+        c_t = torch.zeros(B, self.lstm_cell.hidden_size, device=device)
 
         for t in range(T):
             emb_t = emb[:, t]  # (B, D)
-            h_t, c_t = self.lstm_cell(emb_t, (h_t, c_t))
 
+            # Mask: (B,) -> (B, 1)
+            mask = (lengths > t).float().unsqueeze(1)  # 1 if still active, 0 if padding
+
+            h_t_new, c_t_new = self.lstm_cell(emb_t, (h_t, c_t))
+
+            # Only update states where mask is 1
+            h_t = h_t_new * mask + h_t * (1 - mask)
+            c_t = c_t_new * mask + c_t * (1 - mask)
 
         return self.classifier(h_t).squeeze(-1)
+
+
 # --------------------------
 # Training & Evaluation
 # --------------------------
@@ -115,8 +125,8 @@ def main():
     parser.add_argument("--embedding_dim", type=int, default=16)
     parser.add_argument("--hidden_dim", type=int, default=128)
     parser.add_argument("--batch_size", type=int, default=64)
-    parser.add_argument("--num_epochs", type=int, default=100)
-    parser.add_argument("--learning_rate", type=float, default=0.1)
+    parser.add_argument("--num_epochs", type=int, default=10)
+    parser.add_argument("--learning_rate", type=float, default=0.001)
     args = parser.parse_args()
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
