@@ -20,9 +20,12 @@ class TaggingDataset(torch.utils.data.Dataset):
 
 def collate_fn(batch):
     sequences, labels = zip(*batch)
+    sequences = [torch.tensor(seq, dtype=torch.long) for seq in sequences]
+    labels = [torch.tensor(lbl, dtype=torch.long) for lbl in labels]  # ✅ this line
     lengths = [len(seq) for seq in sequences]
-    padded = nn.utils.rnn.pad_sequence(sequences, batch_first=True)
-    return padded, torch.stack(labels), torch.tensor(lengths)
+    padded_sequences = nn.utils.rnn.pad_sequence(sequences, batch_first=True)
+    padded_labels = nn.utils.rnn.pad_sequence(labels, batch_first=True, padding_value=0)  # 0 = <PAD>
+    return padded_sequences, padded_labels, torch.tensor(lengths)
 
 # --------------------------
 # 2-layer BiLSTM with LSTMCell
