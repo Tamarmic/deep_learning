@@ -1,67 +1,94 @@
-# Part 1: LSTM Acceptor for Formal Language Classification
 
-This part implements a neural sequence acceptor using nn.LSTMCell (not nn.LSTM) to recognize sequences matching a formal regular pattern.
+# RNN Acceptor - Assignment
 
-# ✅ Pattern to Learn:
+This README explains how to run the RNN acceptor model for binary sequence classification using LSTM, covering Part 1 (implementation and experimentation) and Part 2 (designing languages the model fails on).
 
-The network is trained to distinguish strings of the form:
+---
 
-[1-9]+ a+ [1-9]+ b+ [1-9]+ c+ [1-9]+ d+ [1-9]+
+## Part 1: RNN Acceptor
 
-from incorrect variants.
+### Files
 
-## 🔧 Requirements
+- `experiment.py`: Trains and evaluates the LSTM-based acceptor.
+- `gen_example1.py`: Generates datasets for languages 1–10.
+- `data/langX_train.txt`, `data/langX_test.txt`: Training and testing datasets for each language (X = 1 to 10).
+- `report1.docx`: Summary of experiments for Part 1.
+- `training_plot.png`: Optional plot generated if `--plot` is used.
 
-Python 3
+### Requirements
 
-PyTorch
+- Python 3.7+
+- PyTorch
+- matplotlib (optional for plotting)
 
-Matplotlib (for plots)
+Install dependencies with:
+```bash
+pip install torch matplotlib
+```
 
-Install dependencies:
+### Generating Data
 
-pip instarch matplotlibll to
+Run the following to generate training and test data for all 10 languages:
+```bash
+python gen_example1.py
+```
 
-## 📂 File Overview
+### Running the Experiment
 
-experiment.py: main training and evaluation code for the LSTMCell model
+```bash
+python experiment.py --train_file data/lang1_train.txt --test_file data/lang1_test.txt
+```
 
-gen_examples.py: generates synthetic data for training and testing
+To save a plot of training loss and accuracy per epoch:
+```bash
+python experiment.py --train_file data/lang1_train.txt --test_file data/lang1_test.txt --plot
+```
 
-# 📊 Run Instructions
+Additional options:
+- `--embedding_dim`
+- `--hidden_dim`
+- `--batch_size`
+- `--num_epochs`
+- `--learning_rate`
 
-## Step 1: Generate data
+### Example
 
-python gen_examples.py
+```bash
+python experiment.py --train_file data/lang8_train.txt --test_file data/lang8_test.txt --num_epochs 20 --plot
+```
 
-This will create data/train.txt and data/test.txt with 5000 positive and 5000 negative examples each.
+---
 
-## Step 2: Train the model
+## Part 2: Challenging the Acceptor
 
-python experiment.py --train_file data/train.txt --test_file data/test.txt --plot
+In Part 2, we explore the limitations of LSTM-based acceptors by constructing languages the model is expected to fail on. Languages 8–10 were designed to expose these weaknesses.
 
-## Optional arguments:
+### Challenging Languages
 
-* --embedding_dim (default=16): dimension of character embeddings
+- **Language 8**: Requires counting character frequencies and computing with ASCII values.
+- **Language 9**: Requires comparing first and last characters (long-distance dependency).
+- **Language 10**: Depends on a global property: string length parity (even vs odd).
 
-* --hidden_dim (default=128): hidden size of LSTMCell
+### Files
 
-* --batch_size (default=64)
+- `gen_example1.py`: Includes generators for languages 8–10.
+- `data/lang8_train.txt`, etc.: Generated data for each challenging case.
+- `report2.docx`: Detailed failure analysis of these languages, with placeholders for performance plots.
 
-* --num_epochs (default=10)
+### Expected Results
 
-* --learning_rate (default=0.001)
+These languages are likely to confuse the RNN model due to:
+- Arithmetic operations (Language 8)
+- Long-distance dependencies (Language 9)
+- Global string length features (Language 10)
 
-* --plot: if set, saves PNG plots of loss and accuracy curves
+Use the same training script as in Part 1 with:
+```bash
+python experiment.py --train_file data/lang8_train.txt --test_file data/lang8_test.txt --plot
+```
 
-# 📈 Outputs
+---
 
-* Console logs showing epoch-by-epoch loss and accuracy
+## Contact
 
-* Final test accuracy and total training time
-
-* If --plot is used:
-
-* * plot_loss.png: training loss vs. epoch
-
-* * plot_acc.png: test accuracy vs. epoch
+For any issues or clarification, refer to the assignment PDF or instructor.
