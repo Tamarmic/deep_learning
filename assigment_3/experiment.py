@@ -127,6 +127,7 @@ def main():
     parser.add_argument("--batch_size", type=int, default=64)
     parser.add_argument("--num_epochs", type=int, default=10)
     parser.add_argument("--learning_rate", type=float, default=0.001)
+    parser.add_argument("--plot", action="store_true", help="Enable plotting")
     args = parser.parse_args()
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -148,17 +149,35 @@ def main():
 
     # Train loop
     print("Training started...")
+    train_losses = []
+    test_accuracies = []
     start_time = time.time()
     for epoch in range(args.num_epochs):
         loss = train(model, train_loader, optimizer, loss_fn, device)
         acc = evaluate(model, test_loader, device)
         print(f"Epoch {epoch+1} - Loss: {loss:.4f} - Test Acc: {acc:.4f}")
+        train_losses.append(loss)
+        test_accuracies.append(acc)
     end_time = time.time()
 
     # Final report
     print(f"\n✅ Finished in {end_time - start_time:.2f} seconds.")
     print(f"✔️  Final Test Accuracy: {evaluate(model, test_loader, device):.4f}")
     print(f"✔️  Total training steps: {len(train_loader) * args.num_epochs}")
+
+    # Plotting if enabled
+    if args.plot:
+        import matplotlib.pyplot as plt
+        plt.figure(figsize=(10, 5))
+        plt.plot(range(1, args.num_epochs+1), train_losses, label="Train Loss")
+        plt.plot(range(1, args.num_epochs+1), test_accuracies, label="Test Accuracy")
+        plt.xlabel("Epoch")
+        plt.ylabel("Value")
+        plt.title("Training Loss and Test Accuracy per Epoch")
+        plt.legend()
+        plt.grid(True)
+        plt.savefig("training_plot.png")
+        print("📊 Plot saved to training_plot.png")
 
 if __name__ == "__main__":
     main()
