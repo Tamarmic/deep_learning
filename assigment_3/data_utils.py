@@ -37,8 +37,8 @@ def read_dataset(file_path, labeled=True):
 
 def build_vocab(data):
     word2idx = {PAD_TOKEN: 0, UNK_TOKEN: 1}
-    tag2idx = {}
-    idx2tag = {}
+    tag2idx = {PAD_TOKEN: 0}
+    idx2tag = {0: PAD_TOKEN}
 
     for sentence in data:
         for word, tag in sentence:
