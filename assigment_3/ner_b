@@ -1,0 +1,38 @@
+nohup: ignoring input
+Training repr mode 'b' for 5 epochs on device cpu for task 'ner'
+Epoch 1/5
+Sentences seen: 512, Dev Acc: 0.8332
+Sentences seen: 1024, Dev Acc: 0.8332
+Sentences seen: 1504, Dev Acc: 0.8332
+Sentences seen: 2016, Dev Acc: 0.8332
+Sentences seen: 2528, Dev Acc: 0.8332
+Sentences seen: 3008, Dev Acc: 0.8332
+Sentences seen: 3520, Dev Acc: 0.8332
+Sentences seen: 4000, Dev Acc: 0.8332
+Sentences seen: 4512, Dev Acc: 0.8332
+Sentences seen: 5024, Dev Acc: 0.8332
+Sentences seen: 5504, Dev Acc: 0.8332
+Sentences seen: 6016, Dev Acc: 0.8332
+Sentences seen: 6528, Dev Acc: 0.8332
+Sentences seen: 7008, Dev Acc: 0.8332
+Sentences seen: 7520, Dev Acc: 0.8332
+Sentences seen: 8000, Dev Acc: 0.8332
+Sentences seen: 8512, Dev Acc: 0.8332
+Sentences seen: 9024, Dev Acc: 0.8332
+Sentences seen: 9504, Dev Acc: 0.8332
+Sentences seen: 10016, Dev Acc: 0.8332
+Sentences seen: 10528, Dev Acc: 0.8332
+Sentences seen: 11008, Dev Acc: 0.8332
+Sentences seen: 11520, Dev Acc: 0.8332
+Sentences seen: 12000, Dev Acc: 0.8332
+Sentences seen: 12512, Dev Acc: 0.8332
+Sentences seen: 13024, Dev Acc: 0.8350
+Sentences seen: 13504, Dev Acc: 0.8350
+Sentences seen: 14016, Dev Acc: 0.8332
+Sentences seen: 14528, Dev Acc: 0.8350
+Epoch 1 TRAIN loss: 0.6764 | TRAIN accuracy: 0.8319
+Last dev acc: 0.8350
+Epoch 2/5
+Sentences seen: 512, Dev Acc: 0.8350
+Sentences seen: 1024, Dev Acc: 0.8357
+Sentences seen: 1504, Dev Acc: 0.8386

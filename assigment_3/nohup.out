@@ -1,0 +1,51 @@
+Training repr mode 'a' for 5 epochs on device cpu for task 'ner'
+Epoch 1/5
+Sentences seen: 512, Dev Acc: 0.8332
+Sentences seen: 1024, Dev Acc: 0.8332
+Sentences seen: 1504, Dev Acc: 0.8332
+Sentences seen: 2016, Dev Acc: 0.8333
+Sentences seen: 2528, Dev Acc: 0.8331
+Sentences seen: 3008, Dev Acc: 0.8352
+Sentences seen: 3520, Dev Acc: 0.8508
+Sentences seen: 4000, Dev Acc: 0.8677
+Sentences seen: 4512, Dev Acc: 0.8786
+Sentences seen: 5024, Dev Acc: 0.8865
+Sentences seen: 5504, Dev Acc: 0.8841
+Sentences seen: 6016, Dev Acc: 0.8998
+Sentences seen: 6528, Dev Acc: 0.9035
+Sentences seen: 7008, Dev Acc: 0.9102
+Sentences seen: 7520, Dev Acc: 0.9125
+Sentences seen: 8000, Dev Acc: 0.9155
+Sentences seen: 8512, Dev Acc: 0.9180
+Sentences seen: 9024, Dev Acc: 0.9217
+Sentences seen: 9504, Dev Acc: 0.9200
+Sentences seen: 10016, Dev Acc: 0.9225
+Training repr mode 'b' for 5 epochs on device cpu for task 'ner'
+Epoch 1/5
+Sentences seen: 10528, Dev Acc: 0.9186
+Sentences seen: 11008, Dev Acc: 0.9274
+Sentences seen: 512, Dev Acc: 0.8332
+Sentences seen: 11520, Dev Acc: 0.9278
+Sentences seen: 12000, Dev Acc: 0.9324
+Sentences seen: 1024, Dev Acc: 0.8332
+Sentences seen: 12512, Dev Acc: 0.9339
+Sentences seen: 13024, Dev Acc: 0.9356
+Sentences seen: 1504, Dev Acc: 0.8332
+Sentences seen: 13504, Dev Acc: 0.9383
+Sentences seen: 14016, Dev Acc: 0.9399
+Sentences seen: 2016, Dev Acc: 0.8332
+Sentences seen: 14528, Dev Acc: 0.9403
+Epoch 1 TRAIN loss: 0.3575 | TRAIN accuracy: 0.8940
+Last dev acc: 0.9403
+Epoch 2/5
+Sentences seen: 512, Dev Acc: 0.9418
+Sentences seen: 2528, Dev Acc: 0.8332
+Sentences seen: 1024, Dev Acc: 0.9451
+Sentences seen: 1504, Dev Acc: 0.9441
+Sentences seen: 2016, Dev Acc: 0.9454
+Sentences seen: 3008, Dev Acc: 0.8332
+Sentences seen: 2528, Dev Acc: 0.9460
+Sentences seen: 3520, Dev Acc: 0.8332
+Sentences seen: 3008, Dev Acc: 0.9459
+Sentences seen: 3520, Dev Acc: 0.9456
+Sentences seen: 4000, Dev Acc: 0.8332

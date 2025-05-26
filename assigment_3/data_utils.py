@@ -195,12 +195,12 @@ def encode_sentence_with_chars(sentence, word2idx, char2idx, tag2idx, max_word_l
     tag_indices = []
 
     for word, tag in sentence:
-        word_indices.append(word2idx.get(word, word2idx["<UNK>"]))
+        word_indices.append(word2idx.get(word, word2idx[UNK_TOKEN]))
 
         # encode chars of word with padding or truncation
-        chars = [char2idx.get(c, char2idx["<UNK>"]) for c in word]
+        chars = [char2idx.get(c, char2idx[UNK_TOKEN]) for c in word]
         if len(chars) < max_word_len:
-            chars = chars + [char2idx["<PAD>"]] * (max_word_len - len(chars))
+            chars = chars + [char2idx[PAD_TOKEN]] * (max_word_len - len(chars))
         else:
             chars = chars[:max_word_len]
         char_indices.append(chars)
