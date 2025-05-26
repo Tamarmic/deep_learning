@@ -1,0 +1,12 @@
+nohup: ignoring input
+Training repr mode 'a' for 5 epochs on device cpu for task 'ner'
+Epoch 1/5
+Sentences seen: 512, Dev Acc: 0.8332
+Sentences seen: 1024, Dev Acc: 0.8332
+Sentences seen: 1504, Dev Acc: 0.8332
+Sentences seen: 2016, Dev Acc: 0.8332
+Sentences seen: 2528, Dev Acc: 0.8342
+Sentences seen: 3008, Dev Acc: 0.8383
+Sentences seen: 3520, Dev Acc: 0.8601
+Sentences seen: 4000, Dev Acc: 0.8701
+Sentences seen: 4512, Dev Acc: 0.8850

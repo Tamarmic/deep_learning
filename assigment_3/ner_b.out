@@ -1,0 +1,5 @@
+nohup: ignoring input
+Training repr mode 'b' for 5 epochs on device cpu for task 'ner'
+Epoch 1/5
+Sentences seen: 512, Dev Acc: 0.8332
+Sentences seen: 1024, Dev Acc: 0.8332

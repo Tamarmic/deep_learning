@@ -45,37 +45,37 @@ class EmbeddingsWithPrefixSuffix(nn.Module):
         return w + p + s
 
 
+import torch
+import torch.nn as nn
+
+
 class CharLSTMEmbedding(nn.Module):
     def __init__(self, char_vocab_size, char_emb_dim, char_hidden_dim, padding_idx=0):
         super().__init__()
         self.char_embedding = nn.Embedding(
             char_vocab_size, char_emb_dim, padding_idx=padding_idx
         )
-        self.char_lstm = nn.LSTM(char_emb_dim, char_hidden_dim, batch_first=True)
+        self.char_lstm_cell = nn.LSTMCell(char_emb_dim, char_hidden_dim)
         self.char_hidden_dim = char_hidden_dim
 
-    def forward(self, char_seq_padded, char_lengths, seq_lengths):
+    def forward(self, char_seq_padded, char_lengths, seq_lengths=None):
         B, T, max_word_len = char_seq_padded.size()
         device = char_seq_padded.device
-        mask = torch.arange(T, device=device).unsqueeze(0).expand(
-            B, T
-        ) < seq_lengths.unsqueeze(1)
-        valid_char_seqs = char_seq_padded[mask]
-        valid_char_lengths = char_lengths[mask]
-        if (valid_char_lengths <= 0).any():
-            raise ValueError(
-                f"Invalid char_lengths in valid words: {valid_char_lengths}"
-            )
-        embedded = self.char_embedding(valid_char_seqs)
-        packed = nn.utils.rnn.pack_padded_sequence(
-            embedded, valid_char_lengths.cpu(), batch_first=True, enforce_sorted=False
-        )
-        _, (hn, _) = self.char_lstm(packed)
-        hn = hn.squeeze(0)
-        out = torch.zeros(B * T, self.char_hidden_dim, device=device)
-        out[mask.view(-1)] = hn
-        out = out.view(B, T, self.char_hidden_dim)
-        return out
+
+        char_seq_flat = char_seq_padded.view(B * T, max_word_len)
+        char_lengths_flat = char_lengths.view(B * T)
+
+        h_t = torch.zeros(B * T, self.char_hidden_dim, device=device)
+        c_t = torch.zeros(B * T, self.char_hidden_dim, device=device)
+
+        for t in range(max_word_len):
+            char_emb_t = self.char_embedding(char_seq_flat[:, t])
+            mask = (char_lengths_flat > t).float().unsqueeze(1)
+            h_t_new, c_t_new = self.char_lstm_cell(char_emb_t, (h_t, c_t))
+            h_t = h_t_new * mask + h_t * (1 - mask)
+            c_t = c_t_new * mask + c_t * (1 - mask)
+
+        return h_t.view(B, T, self.char_hidden_dim)
 
 
 class BiLSTMLayer(nn.Module):
