@@ -52,7 +52,6 @@ Sentences are separated by blank lines.
 Notes
 
 - For modes b and d, character-level representations require building a character vocabulary from the training data.
-- Mode c currently uses a placeholder embedding. Replace with your assignment 2 subword embedding logic.
 - The model saves a checkpoint containing the trained parameters and vocabularies (word2idx, tag2idx, char2idx).
 - The code handles padding and masking automatically for variable-length sequences.
 
