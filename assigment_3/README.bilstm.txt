@@ -13,7 +13,7 @@ Files
 
 - bilstmTrain.py: Training script implementing all four representation modes.
 - data_utils.py: Utility functions for dataset reading, vocabulary building, and encoding.
-- bilstmPredict.py: (To be implemented) Script for predicting tags using a trained model.
+- bilstmPredict.py: Script for predicting tags using a trained model.
 
 Usage
 
