@@ -178,3 +178,33 @@ def prepare_char_ngram_data(text, char2idx, k):
         Y.append(y_index)
 
     return X, Y
+
+
+def encode_sentence_with_chars(sentence, word2idx, char2idx, tag2idx, max_word_len=42):
+    """
+    Encode a sentence for modes b and d:
+    Returns:
+      - word_indices: list[int]
+      - char_indices_per_word: list[list[int]]
+      - tag_indices: list[int]
+
+    Each word's characters are encoded as a list of indices, padded/truncated to max_word_len.
+    """
+    word_indices = []
+    char_indices = []
+    tag_indices = []
+
+    for word, tag in sentence:
+        word_indices.append(word2idx.get(word, word2idx["<UNK>"]))
+
+        # encode chars of word with padding or truncation
+        chars = [char2idx.get(c, char2idx["<UNK>"]) for c in word]
+        if len(chars) < max_word_len:
+            chars = chars + [char2idx["<PAD>"]] * (max_word_len - len(chars))
+        else:
+            chars = chars[:max_word_len]
+        char_indices.append(chars)
+
+        tag_indices.append(tag2idx[tag])
+
+    return word_indices, char_indices, tag_indices
