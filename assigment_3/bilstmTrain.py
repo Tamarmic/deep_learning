@@ -1,4 +1,3 @@
-import os
 import numpy as np
 import torch
 import torch.nn as nn
@@ -127,33 +126,18 @@ def collate_fn_c(batch):
 collate_fn_d = collate_fn_b
 
 
-# Accuracy helper
 def compute_accuracy(logits, y, pad_idx=0, ignore_tag_idx=None):
-    """
-    Compute accuracy, optionally ignoring cases where both true and pred equal ignore_tag_idx.
-
-    Args:
-        logits: (B, T, C) model outputs (unnormalized)
-        y: (B, T) true tag indices
-        pad_idx: int, index of padding tag to ignore
-        ignore_tag_idx: int or None, tag index to ignore when both pred and true equal it
-
-    Returns:
-        accuracy float
-    """
     preds = torch.argmax(logits, dim=-1)
-    mask = y != pad_idx
+    valid_mask = y != pad_idx
+
     if ignore_tag_idx is not None:
         ignore_mask = (y == ignore_tag_idx) & (preds == ignore_tag_idx)
-        valid_mask = mask & (~ignore_mask)
-    else:
-        valid_mask = mask
+        valid_mask = valid_mask & (~ignore_mask)
 
     correct = (preds == y) & valid_mask
-    total = valid_mask.sum().item()
-    if total == 0:
-        return 0.0
-    return correct.sum().item() / total
+    num_correct = correct.sum().item()
+    num_valid = valid_mask.sum().item()
+    return num_correct, num_valid
 
 
 # Train epoch function
@@ -168,12 +152,13 @@ def train_epoch(
     dev_loader,
     eval_every=500,
     ignore_tag_idx=None,
+    samples_processed=0,
+    next_eval_at=500,
 ):
     model.train()
     total_loss = 0
     total_correct = 0
     total_tokens = 0
-    sentences_seen = 0
     dev_accuracies = []
     for batch in dataloader:
         if repr_mode == "a":
@@ -210,22 +195,30 @@ def train_epoch(
         loss.backward()
         optimizer.step()
 
-        num_valid = (y != pad_idx).sum().item()
-        batch_correct = compute_accuracy(logits, y, pad_idx, ignore_tag_idx) * num_valid
-
+        batch_correct, batch_total = compute_accuracy(
+            logits, y, pad_idx, ignore_tag_idx
+        )
         total_correct += batch_correct
-        total_tokens += num_valid
+        total_tokens += batch_total
         total_loss += loss.item()
-        sentences_seen += x.size(0)
+        batch_size = x.size(0)
+        samples_processed += batch_size
 
-        if sentences_seen % eval_every < x.size(0):
+        while samples_processed >= next_eval_at:
             dev_acc = evaluate(
                 model, dev_loader, device, pad_idx, repr_mode, ignore_tag_idx
             )
-            dev_accuracies.append((sentences_seen, dev_acc))
-            print(f"Sentences seen: {sentences_seen}, Dev Acc: {dev_acc:.4f}")
+            dev_accuracies.append((next_eval_at, dev_acc))
+            print(f"Sentences seen: {next_eval_at}, Dev Acc: {dev_acc:.4f}")
+            next_eval_at += eval_every
 
-    return total_loss / len(dataloader), total_correct / total_tokens, dev_accuracies
+    return (
+        total_loss / len(dataloader),
+        total_correct / total_tokens,
+        dev_accuracies,
+        samples_processed,
+        next_eval_at,
+    )
 
 
 # Evaluation function
@@ -268,12 +261,11 @@ def evaluate(
             else:
                 raise ValueError(f"Unknown repr_mode: {repr_mode}")
 
-            num_valid = (y != pad_idx).sum().item()
-            batch_correct = (
-                compute_accuracy(logits, y, pad_idx, ignore_tag_idx) * num_valid
+            batch_correct, batch_total = compute_accuracy(
+                logits, y, pad_idx, ignore_tag_idx
             )
             total_correct += batch_correct
-            total_tokens += num_valid
+            total_tokens += batch_total
     model.train()
     return total_correct / total_tokens
 
@@ -294,7 +286,7 @@ def main():
     parser.add_argument("--char_emb_dim", type=int, default=30)
     parser.add_argument("--char_hidden_dim", type=int, default=50)
     parser.add_argument("--epochs", type=int, default=5)
-    parser.add_argument("--batch_size", type=int, default=32)
+    parser.add_argument("--batch_size", type=int, default=64)
     parser.add_argument("--lr", type=float, default=1e-3)
     args = parser.parse_args()
 
@@ -387,19 +379,26 @@ def main():
         ignore_tag_idx = tag2idx.get("O", None)
         if ignore_tag_idx is None:
             print("Warning: 'O' tag not found in tag2idx vocab.")
+    samples_processed = 0
+    next_eval_at = 500
     all_dev_accuracies = []
     for epoch in range(args.epochs):
         print(f"Epoch {epoch+1}/{args.epochs}")
-        train_loss, train_acc, dev_accuracies = train_epoch(
-            model,
-            train_loader,
-            optimizer,
-            loss_fn,
-            device,
-            tag2idx[PAD_TOKEN],
-            args.repr,
-            dev_loader,
-            eval_every=500,
+        train_loss, train_acc, dev_accuracies, samples_processed, next_eval_at = (
+            train_epoch(
+                model,
+                train_loader,
+                optimizer,
+                loss_fn,
+                device,
+                tag2idx[PAD_TOKEN],
+                args.repr,
+                dev_loader,
+                eval_every=500,
+                ignore_tag_idx=ignore_tag_idx,
+                samples_processed=samples_processed,
+                next_eval_at=next_eval_at,
+            )
         )
         print(
             f"Epoch {epoch+1} TRAIN loss: {train_loss:.4f} | TRAIN accuracy: {train_acc:.4f}"

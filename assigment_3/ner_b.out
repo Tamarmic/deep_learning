@@ -1,5 +1,167 @@
-nohup: ignoring input
 Training repr mode 'b' for 5 epochs on device cpu for task 'ner'
 Epoch 1/5
-Sentences seen: 512, Dev Acc: 0.8332
-Sentences seen: 1024, Dev Acc: 0.8332
+Sentences seen: 500, Dev Acc: 0.0000
+Sentences seen: 1000, Dev Acc: 0.0000
+Sentences seen: 1500, Dev Acc: 0.0000
+Sentences seen: 2000, Dev Acc: 0.0000
+Sentences seen: 2500, Dev Acc: 0.0000
+Sentences seen: 3000, Dev Acc: 0.0000
+Sentences seen: 3500, Dev Acc: 0.0000
+Sentences seen: 4000, Dev Acc: 0.0000
+Sentences seen: 4500, Dev Acc: 0.0000
+Sentences seen: 5000, Dev Acc: 0.0000
+Sentences seen: 5500, Dev Acc: 0.0000
+Sentences seen: 6000, Dev Acc: 0.0000
+Sentences seen: 6500, Dev Acc: 0.0000
+Sentences seen: 7000, Dev Acc: 0.0000
+Sentences seen: 7500, Dev Acc: 0.0000
+Sentences seen: 8000, Dev Acc: 0.0000
+Sentences seen: 8500, Dev Acc: 0.0000
+Sentences seen: 9000, Dev Acc: 0.0000
+Sentences seen: 9500, Dev Acc: 0.0000
+Sentences seen: 10000, Dev Acc: 0.0000
+Sentences seen: 10500, Dev Acc: 0.0000
+Sentences seen: 11000, Dev Acc: 0.0000
+Sentences seen: 11500, Dev Acc: 0.0000
+Sentences seen: 12000, Dev Acc: 0.0000
+Sentences seen: 12500, Dev Acc: 0.0000
+Sentences seen: 13000, Dev Acc: 0.0000
+Sentences seen: 13500, Dev Acc: 0.0000
+Sentences seen: 14000, Dev Acc: 0.0000
+Sentences seen: 14500, Dev Acc: 0.0000
+Epoch 1 TRAIN loss: 0.6943 | TRAIN accuracy: 0.0005
+Last dev acc: 0.0000
+Epoch 2/5
+Sentences seen: 15000, Dev Acc: 0.0000
+Sentences seen: 15500, Dev Acc: 0.0000
+Sentences seen: 16000, Dev Acc: 0.0000
+Sentences seen: 16500, Dev Acc: 0.0000
+Sentences seen: 17000, Dev Acc: 0.0000
+Sentences seen: 17500, Dev Acc: 0.0000
+Sentences seen: 18000, Dev Acc: 0.0182
+Sentences seen: 18500, Dev Acc: 0.0286
+Sentences seen: 19000, Dev Acc: 0.0513
+Sentences seen: 19500, Dev Acc: 0.0588
+Sentences seen: 20000, Dev Acc: 0.0593
+Sentences seen: 20500, Dev Acc: 0.1057
+Sentences seen: 21000, Dev Acc: 0.1105
+Sentences seen: 21500, Dev Acc: 0.1433
+Sentences seen: 22000, Dev Acc: 0.2072
+Sentences seen: 22500, Dev Acc: 0.1342
+Sentences seen: 23000, Dev Acc: 0.1404
+Sentences seen: 23500, Dev Acc: 0.1536
+Sentences seen: 24000, Dev Acc: 0.1721
+Sentences seen: 24500, Dev Acc: 0.2072
+Sentences seen: 25000, Dev Acc: 0.2019
+Sentences seen: 25500, Dev Acc: 0.2397
+Sentences seen: 26000, Dev Acc: 0.2321
+Sentences seen: 26500, Dev Acc: 0.2287
+Sentences seen: 27000, Dev Acc: 0.2015
+Sentences seen: 27500, Dev Acc: 0.2267
+Sentences seen: 28000, Dev Acc: 0.2433
+Sentences seen: 28500, Dev Acc: 0.2358
+Sentences seen: 29000, Dev Acc: 0.2580
+Sentences seen: 29500, Dev Acc: 0.2632
+Epoch 2 TRAIN loss: 0.5327 | TRAIN accuracy: 0.1351
+Last dev acc: 0.2632
+Epoch 3/5
+Sentences seen: 30000, Dev Acc: 0.2580
+Sentences seen: 30500, Dev Acc: 0.2656
+Sentences seen: 31000, Dev Acc: 0.2551
+Sentences seen: 31500, Dev Acc: 0.2481
+Sentences seen: 32000, Dev Acc: 0.2617
+Sentences seen: 32500, Dev Acc: 0.2606
+Sentences seen: 33000, Dev Acc: 0.2282
+Sentences seen: 33500, Dev Acc: 0.2755
+Sentences seen: 34000, Dev Acc: 0.2802
+Sentences seen: 34500, Dev Acc: 0.2679
+Sentences seen: 35000, Dev Acc: 0.2782
+Sentences seen: 35500, Dev Acc: 0.2944
+Sentences seen: 36000, Dev Acc: 0.2480
+Sentences seen: 36500, Dev Acc: 0.2643
+Sentences seen: 37000, Dev Acc: 0.3004
+Sentences seen: 37500, Dev Acc: 0.2919
+Sentences seen: 38000, Dev Acc: 0.2614
+Sentences seen: 38500, Dev Acc: 0.2965
+Sentences seen: 39000, Dev Acc: 0.3046
+Sentences seen: 39500, Dev Acc: 0.2849
+Sentences seen: 40000, Dev Acc: 0.2984
+Sentences seen: 40500, Dev Acc: 0.3223
+Sentences seen: 41000, Dev Acc: 0.2816
+Sentences seen: 41500, Dev Acc: 0.2840
+Sentences seen: 42000, Dev Acc: 0.2721
+Sentences seen: 42500, Dev Acc: 0.2602
+Sentences seen: 43000, Dev Acc: 0.3024
+Sentences seen: 43500, Dev Acc: 0.3187
+Sentences seen: 44000, Dev Acc: 0.3262
+Sentences seen: 44500, Dev Acc: 0.3263
+Epoch 3 TRAIN loss: 0.4145 | TRAIN accuracy: 0.2894
+Last dev acc: 0.3263
+Epoch 4/5
+Sentences seen: 45000, Dev Acc: 0.3300
+Sentences seen: 45500, Dev Acc: 0.3296
+Sentences seen: 46000, Dev Acc: 0.3256
+Sentences seen: 46500, Dev Acc: 0.3286
+Sentences seen: 47000, Dev Acc: 0.3130
+Sentences seen: 47500, Dev Acc: 0.3263
+Sentences seen: 48000, Dev Acc: 0.3341
+Sentences seen: 48500, Dev Acc: 0.3488
+Sentences seen: 49000, Dev Acc: 0.3375
+Sentences seen: 49500, Dev Acc: 0.3474
+Sentences seen: 50000, Dev Acc: 0.3374
+Sentences seen: 50500, Dev Acc: 0.3564
+Sentences seen: 51000, Dev Acc: 0.3677
+Sentences seen: 51500, Dev Acc: 0.3448
+Sentences seen: 52000, Dev Acc: 0.3735
+Sentences seen: 52500, Dev Acc: 0.3611
+Sentences seen: 53000, Dev Acc: 0.3554
+Sentences seen: 53500, Dev Acc: 0.3346
+Sentences seen: 54000, Dev Acc: 0.3638
+Sentences seen: 54500, Dev Acc: 0.3590
+Sentences seen: 55000, Dev Acc: 0.3537
+Sentences seen: 55500, Dev Acc: 0.3741
+Sentences seen: 56000, Dev Acc: 0.3733
+Sentences seen: 56500, Dev Acc: 0.3823
+Sentences seen: 57000, Dev Acc: 0.3787
+Sentences seen: 57500, Dev Acc: 0.3460
+Sentences seen: 58000, Dev Acc: 0.3706
+Sentences seen: 58500, Dev Acc: 0.3755
+Sentences seen: 59000, Dev Acc: 0.3284
+Sentences seen: 59500, Dev Acc: 0.3609
+Epoch 4 TRAIN loss: 0.3711 | TRAIN accuracy: 0.3589
+Last dev acc: 0.3609
+Epoch 5/5
+Sentences seen: 60000, Dev Acc: 0.3568
+Sentences seen: 60500, Dev Acc: 0.3391
+Sentences seen: 61000, Dev Acc: 0.3774
+Sentences seen: 61500, Dev Acc: 0.3789
+Sentences seen: 62000, Dev Acc: 0.3850
+Sentences seen: 62500, Dev Acc: 0.3854
+Sentences seen: 63000, Dev Acc: 0.3953
+Sentences seen: 63500, Dev Acc: 0.3939
+Sentences seen: 64000, Dev Acc: 0.3931
+Sentences seen: 64500, Dev Acc: 0.3813
+Sentences seen: 65000, Dev Acc: 0.3323
+Sentences seen: 65500, Dev Acc: 0.3722
+Sentences seen: 66000, Dev Acc: 0.3934
+Sentences seen: 66500, Dev Acc: 0.3846
+Sentences seen: 67000, Dev Acc: 0.4008
+Sentences seen: 67500, Dev Acc: 0.3856
+Sentences seen: 68000, Dev Acc: 0.3782
+Sentences seen: 68500, Dev Acc: 0.3892
+Sentences seen: 69000, Dev Acc: 0.3676
+Sentences seen: 69500, Dev Acc: 0.3682
+Sentences seen: 70000, Dev Acc: 0.3801
+Sentences seen: 70500, Dev Acc: 0.3887
+Sentences seen: 71000, Dev Acc: 0.3812
+Sentences seen: 71500, Dev Acc: 0.3863
+Sentences seen: 72000, Dev Acc: 0.4002
+Sentences seen: 72500, Dev Acc: 0.4036
+Sentences seen: 73000, Dev Acc: 0.3935
+Sentences seen: 73500, Dev Acc: 0.3737
+Sentences seen: 74000, Dev Acc: 0.3854
+Sentences seen: 74500, Dev Acc: 0.4121
+Epoch 5 TRAIN loss: 0.3463 | TRAIN accuracy: 0.3973
+Last dev acc: 0.4121
+Dev accuracies saved to dev_acc_ner_b.pkl
+Model saved to bilstm_b_ner.pt

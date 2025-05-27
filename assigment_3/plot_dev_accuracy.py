@@ -2,7 +2,7 @@ import pickle
 import matplotlib.pyplot as plt
 
 
-def plot_dev_accuracies(filenames, labels, title, save_pdf=True):
+def plot_dev_accuracies(filenames, labels, title, save_png=True):
     plt.figure(figsize=(10, 6))
     for file, label in zip(filenames, labels):
         with open(file, "rb") as f:
@@ -18,10 +18,10 @@ def plot_dev_accuracies(filenames, labels, title, save_pdf=True):
     plt.title(title)
     plt.legend()
     plt.grid(True)
-    if save_pdf:
-        pdf_name = title.replace(" ", "_").lower() + ".pdf"
-        plt.savefig(pdf_name)
-        print(f"Plot saved to {pdf_name}")
+    if save_png:
+        png_name = title.replace(" ", "_").lower() + ".png"
+        plt.savefig(png_name)
+        print(f"Plot saved to {png_name}")
     plt.show()
 
 
