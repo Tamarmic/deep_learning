@@ -422,6 +422,10 @@ def main():
             "prefix2idx": prefix2idx,
             "suffix2idx": suffix2idx,
             "repr": args.repr,
+            "embedding_dim": args.embedding_dim,
+            "hidden_dim": args.hidden_dim,
+            "char_emb_dim": args.char_emb_dim,
+            "char_hidden_dim": args.char_hidden_dim,
         },
         args.model_file,
     )

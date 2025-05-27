@@ -119,7 +119,7 @@ class BiLSTMTagger(nn.Module):
         vocab_size,
         tagset_size,
         repr_mode,
-        embedding_dim=100,
+        embedding_dim=50,
         hidden_dim=100,
         char_vocab_size=None,
         char_emb_dim=30,
