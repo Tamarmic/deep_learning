@@ -6,13 +6,15 @@ import math
 
 
 def create_kqv_matrix(input_vector_dim, n_heads = 1):
-    return nn.Linear(0, 0) # TODO fill in the correct dimensions
+    out_dim = 3 * input_vector_dim // n_heads
+    return nn.Linear(input_vector_dim, out_dim) # TODO fill in the correct dimensions
 
 def kqv(x, linear):
     raise Exception("Not implemented.")
     B, N, D = x.size()
     # TODO compute k, q, and v
     # (can do it in 1 or 2 lines.)
+
     return k, q, v
 
 def attention_scores(a, b):
