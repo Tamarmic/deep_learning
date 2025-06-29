@@ -10,40 +10,39 @@ def create_kqv_matrix(input_vector_dim, n_heads = 1):
     return nn.Linear(input_vector_dim, out_dim) # TODO fill in the correct dimensions
 
 def kqv(x, linear):
-    raise Exception("Not implemented.")
     B, N, D = x.size()
-    # TODO compute k, q, and v
-    # (can do it in 1 or 2 lines.)
-
+    combined = linear(x)  # Shape: (B, N, 3 * D_head)
+    D_head = combined.size(-1) // 3
+    k, q, v = torch.split(combined, D_head, dim=-1)
     return k, q, v
 
-def attention_scores(a, b):
-    raise Exception("Not implemented.")
 
+def attention_scores(a, b):
     B1, N1, D1 = a.size()
     B2, N2, D2 = b.size()
-    assert B1 == B2
-    assert D1 == D2
+    assert B1 == B2 and D1 == D2
 
-    # TODO compute A (remember: we are computing *scaled* dot product attention. don't forget the scaling.
-    # (can do it in 1 or 2 lines.)
+    scale = math.sqrt(D1)
+    A = torch.bmm(b, a.transpose(1, 2)) / scale  # shape (B, N2, N1)
     return A
 
+
 def create_causal_mask(embed_dim, n_heads, max_context_len):
-    raise Exception("Not implemented")
     # Return a causal mask (a tensor) with zeroes in dimensions we want to zero out.
     # This function receives more arguments than it actually needs. This is just because
     # it is part of an assignment, and I want you to figure out on your own which arguments
     # are relevant.
 
-    mask = None # TODO replace this line with the creation of a causal mask.
+    mask = torch.tril(torch.ones((1, max_context_len, max_context_len), dtype=torch.bool))
     return mask
 
 def self_attention(v, A, mask = None):
-    raise Exception("Not implemented.")
     # TODO compute sa (corresponding to y in the assignemnt text).
+    if mask is not None:
+        A = A.masked_fill(mask[:, :A.size(1), :A.size(2)] == 0, float("-inf"))
     # This should take very few lines of code.
     # As usual, the dimensions of v and of sa are (b x n x d).
+    sa = torch.bmm(F.softmax(A, dim=-1), v)
     return sa
 
 
@@ -63,6 +62,12 @@ def multi_head_attention_layer(x, kqv_matrices, mask):
     # There is also a tricker (but more efficient) version of multi-head attention, where we do all the computation
     # using a single multiplication with a single kqv_matrix (or a single kqv_tensor) and re-arranging the results afterwards.
     # If you want a challenge, you can try and implement this. You may need to change additional places in the code accordingly.
+    n_heads = len(kqv_matrices)
+    outputs = []
+    for i in range(n_heads):
+        sa = self_attention_layer(x, kqv_matrices[i], mask)
+        outputs.append(sa)
+    sa = torch.cat(outputs, dim=-1)
     assert sa.size() == x.size()
     return sa
 

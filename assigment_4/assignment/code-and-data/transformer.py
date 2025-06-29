@@ -15,8 +15,12 @@ class TransformerDecoderBlock(nn.Module):
 
     def forward(self, inputs):
         if self.with_residuals:
-            raise Exception("Not implemented")
-            # TODO add residuals support.
+            x = self.layer_norm_1(inputs)
+            x = self.causal_attention(x)
+            x = inputs + x
+            x_norm = self.layer_norm_2(x)
+            x = x + self.mlp(x_norm)
+            return x
         else:
             x = inputs
             x = self.layer_norm_1(x)
@@ -28,17 +32,17 @@ class TransformerDecoderBlock(nn.Module):
 class Embed(nn.Module):
     def __init__(self, vocab_size: int, embed_size: int, max_context_len):
         super().__init__()
-        self.token_embeddings = nn.Embedding(0, 0) # TODO set the right values
-        self.position_embeddings = nn.Embedding(0, 0) # TODO set the right values
+        self.token_embeddings = nn.Embedding(vocab_size, embed_size) # TODO set the right values
+        self.position_embeddings = nn.Embedding(max_context_len, embed_size) # TODO set the right values
         self.max_context_len = max_context_len
 
     def forward(self, x):
-        raise Exception("Not implemented") # TODO implement.
         # x has the shape (b x n) where b is batch dimension and n is sequence length.
         # each item is an int, indicating a vocabulary item.
         # The output should be of shape (b x n x d), where d is the embedding dimension.
-        #tok_embeddings = 
-        #pos_embeddings = ...
+        tok_embeddings = self.token_embeddings(x)
+        positions = torch.arange(x.size(1), device=x.device).unsqueeze(0)
+        pos_embeddings = self.position_embeddings(positions)
         return tok_embeddings + pos_embeddings
 
 
