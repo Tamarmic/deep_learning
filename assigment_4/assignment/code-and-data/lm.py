@@ -9,8 +9,8 @@ def batch_to_labeled_samples(batch: torch.IntTensor) -> [torch.IntTensor, torch.
     # The batches that we get from the reader have corpus-sequences of length max-context + 1.
     # We need to translate them to input/output examples, each of which is shorter by one.
     # That is, if our input is of dimension (b x n) our output is two tensors, each of dimension (b x n-1)
-    inputs = batch[:,:] # TODO fix this
-    labels = batch[:,:] # TODO fix this
+    inputs = batch[:,:-1] # TODO fix this
+    labels = batch[:,1:] # TODO fix this
     return (inputs, labels)
 
 def compute_loss(logits, gold_labels):
@@ -19,5 +19,7 @@ def compute_loss(logits, gold_labels):
     # NOTE remember to handle padding (ignore them in loss calculation!)
     # NOTE cross-entropy expects other dimensions for logits
     # NOTE you can either use cross_entropy from PyTorch, or implement the loss on your own.
-    return ...
+    logits = logits.reshape(-1, logits.size(2))
+    gold_labels = gold_labels.reshape(-1)
+    return F.cross_entropy(logits, gold_labels, ignore_index=0)
 

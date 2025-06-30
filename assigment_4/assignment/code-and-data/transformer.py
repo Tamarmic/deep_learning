@@ -89,11 +89,13 @@ class TransformerLM(nn.Module):
             elif isinstance(p, nn.Linear):
                 # TODO initialize p.weight and p.bias (if it is not None).
                 # You can look at initializers in torch.nn.init
-                pass
+                torch.nn.init.xavier_normal(p.weight)
+                if p.bias is not None:
+                    torch.nn.init.normal_(p.bias)
             elif isinstance(p, nn.Embedding):
                 # TODO initialize p.weight and p.bias (if it is not None).
                 # You can look at initializers in torch.nn.init
-                pass
+                torch.nn.init.xavier_normal_(p.weight)
 
 
     def sample_continuation(self, prefix: list[int], max_tokens_to_generate: int) -> list[int]:

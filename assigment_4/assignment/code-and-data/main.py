@@ -18,6 +18,7 @@ if __name__ == '__main__':
     mlp_hidden_size = embed_size * 4
 
     learning_rate = 5e-4
+    weight_decay = 1e-5
     gradient_clipping = 1.0
 
     num_batches_to_train = 50000
@@ -37,7 +38,7 @@ if __name__ == '__main__':
             with_residuals = True,
         )
 
-    optimizer = optim.AdamW(model.parameters(), lr=learning_rate, betas=[0.9, 0.95])
+    optimizer = optim.AdamW(model.parameters(), lr=learning_rate, betas=[0.9, 0.95], weight_decay=weight_decay)
 
 
 

@@ -1,6 +1,9 @@
 from __future__ import annotations
+
+import json
 from typing import Iterator
 import torch
+from matplotlib.font_manager import json_load
 from torch import nn
 import torch.nn.functional as F
 import random
@@ -43,12 +46,24 @@ class CharTokenizer:
 
     def save(self, path: str) -> None:
         # TODO: save it.
-        ...
+        tokenizer = {
+            "symbols": self.symbols,
+            "tokens": self.tokens,
+            "vocab": self.vocab,
+            "stoi": self.stoi,
+        }
+        with open(path, "wb") as f:
+            json.dump(tokenizer, f)
 
     @staticmethod
     def load(path: str) -> CharTokenizer:
         tokenizer = CharTokenizer()
-        # TODO: load it.
+        with open(path, "rb") as f:
+            tokenizer_json = json.load(f)
+        tokenizer.symbols = tokenizer_json["symbols"]
+        tokenizer.tokens = tokenizer_json["tokens"]
+        tokenizer.vocab = tokenizer_json["vocab"]
+        tokenizer.stoi = tokenizer_json["stoi"]
         return tokenizer
 
 class RandomOrderDataIterator:
