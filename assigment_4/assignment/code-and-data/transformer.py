@@ -133,7 +133,20 @@ class TransformerLM(nn.Module):
                     feed_to_lm = feed_to_lm[-self.max_context_len:]
                 logits = self(torch.tensor([feed_to_lm], dtype=torch.int32, device=self.device))
                 logits_for_last_token = logits[0][-1]
-                distribution_for_last_token = F.softmax(logits_for_last_token)
+                logits_for_last_token /= temperature  # Scale logits by temperature
+
+                # Top-K Sampling
+                if topK > 0:
+                    # Get the indices of the top K logits
+                    top_k_values, top_k_indices = torch.topk(logits_for_last_token, topK)
+
+                    # Create a mask to keep only the top K logits
+                    mask = torch.full_like(logits_for_last_token, -float('inf'))
+                    mask[top_k_indices] = logits_for_last_token[top_k_indices]
+                    logits_for_last_token = mask
+
+                # Softmax to get probabilities
+                distribution_for_last_token = F.softmax(logits_for_last_token, dim=-1)
                 sampled_token = torch.multinomial(distribution_for_last_token, num_samples=1)
                 generated.append(sampled_token)
                 feed_to_lm.append(sampled_token)
