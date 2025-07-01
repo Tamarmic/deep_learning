@@ -4,7 +4,7 @@ from torch import nn
 import torch.nn.functional as F
 
 def batch_to_labeled_samples(batch: torch.IntTensor) -> [torch.IntTensor, torch.IntTensor]:
-    raise Exception("Not implemented.")
+
     # TODO implement this.
     # The batches that we get from the reader have corpus-sequences of length max-context + 1.
     # We need to translate them to input/output examples, each of which is shorter by one.

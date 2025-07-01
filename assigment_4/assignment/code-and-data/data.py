@@ -48,7 +48,7 @@ class CharTokenizer:
         # TODO: save it.
         tokenizer = {
             "symbols": self.symbols,
-            "tokens": self.tokens,
+            "tokens": list(self.tokens),
             "vocab": self.vocab,
             "stoi": self.stoi,
         }
@@ -61,7 +61,7 @@ class CharTokenizer:
         with open(path, "rb") as f:
             tokenizer_json = json.load(f)
         tokenizer.symbols = tokenizer_json["symbols"]
-        tokenizer.tokens = tokenizer_json["tokens"]
+        tokenizer.tokens = set(tokenizer_json["tokens"])
         tokenizer.vocab = tokenizer_json["vocab"]
         tokenizer.stoi = tokenizer_json["stoi"]
         return tokenizer

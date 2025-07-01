@@ -12,21 +12,22 @@ class TransformerDecoderBlock(nn.Module):
         self.layer_norm_1 = nn.LayerNorm(embed_size)
         self.layer_norm_2 = nn.LayerNorm(embed_size)
         self.with_residuals = with_residuals
+        self.dropout = nn.Dropout(p=0.1)
 
     def forward(self, inputs):
         if self.with_residuals:
             x = self.layer_norm_1(inputs)
-            x = self.causal_attention(x)
+            x = self.dropout(self.causal_attention(x))
             x = inputs + x
             x_norm = self.layer_norm_2(x)
-            x = x + self.mlp(x_norm)
+            x = x + self.dropout(self.mlp(x_norm))
             return x
         else:
             x = inputs
             x = self.layer_norm_1(x)
-            x = self.causal_attention(x)
+            x = self.dropout(self.causal_attention(x))
             x = self.layer_norm_2(x)
-            x = self.mlp(x)
+            x = self.dropout(self.mlp(x_norm))
             return x
 
 class Embed(nn.Module):
@@ -35,6 +36,7 @@ class Embed(nn.Module):
         self.token_embeddings = nn.Embedding(vocab_size, embed_size) # TODO set the right values
         self.position_embeddings = nn.Embedding(max_context_len, embed_size) # TODO set the right values
         self.max_context_len = max_context_len
+        self.dropout = nn.Dropout(p=0.1)
 
     def forward(self, x):
         # x has the shape (b x n) where b is batch dimension and n is sequence length.
@@ -43,7 +45,7 @@ class Embed(nn.Module):
         tok_embeddings = self.token_embeddings(x)
         positions = torch.arange(x.size(1), device=x.device).unsqueeze(0)
         pos_embeddings = self.position_embeddings(positions)
-        return tok_embeddings + pos_embeddings
+        return self.dropout(tok_embeddings + pos_embeddings)
 
 
 class TransformerLM(nn.Module):
@@ -56,6 +58,7 @@ class TransformerLM(nn.Module):
             vocab_size: int,
             mlp_hidden_size: int,
             with_residuals: bool,
+            device: torch.device = torch.device('cpu'),
             ):
         super().__init__()
         self.embed = Embed(vocab_size, embed_size, max_context_len)
@@ -63,6 +66,7 @@ class TransformerLM(nn.Module):
         self.layer_norm = nn.LayerNorm(embed_size)
         self.word_prediction = nn.Linear(embed_size, vocab_size)
         self.max_context_len = max_context_len
+        self.device = device
 
         self.init_weights()
 
@@ -82,7 +86,7 @@ class TransformerLM(nn.Module):
         # TODO implement initialization logic for embeddings and linear layers.
         # The code break down the parameters by type (layer-norm, linear, embedding),
         # but can also condition on individual names, for example by checking pn.endswith(...).
-        for pn, p in self.named_parameters():
+        for p in self.modules():
             if isinstance(p, nn.LayerNorm):
                 torch.nn.init.zeros_(p.bias)
                 torch.nn.init.ones_(p.weight)
@@ -106,7 +110,7 @@ class TransformerLM(nn.Module):
                 if len(feed_to_lm) > self.max_context_len:
                     # if we have more tokens than context length, trim it to context length.
                     feed_to_lm = feed_to_lm[-self.max_context_len:]
-                logits = self(torch.tensor([feed_to_lm], dtype=torch.int32))
+                logits = self(torch.tensor([feed_to_lm], dtype=torch.int32, device=self.device))
                 logits_for_last_token = logits[0][-1]
                 distribution_for_last_token = F.softmax(logits_for_last_token)
                 sampled_token = torch.multinomial(distribution_for_last_token, num_samples=1)
@@ -120,4 +124,18 @@ class TransformerLM(nn.Module):
         # Temperature should be the temperature in which you sample.
         # TopK indicates that we don't sample from the entire distribution, but only from the top k scoring tokens
         # for the given position.
+        feed_to_lm = prefix[:]
+        generated = []
+        with torch.no_grad():
+            while len(generated) < max_tokens_to_generate:
+                if len(feed_to_lm) > self.max_context_len:
+                    # if we have more tokens than context length, trim it to context length.
+                    feed_to_lm = feed_to_lm[-self.max_context_len:]
+                logits = self(torch.tensor([feed_to_lm], dtype=torch.int32, device=self.device))
+                logits_for_last_token = logits[0][-1]
+                distribution_for_last_token = F.softmax(logits_for_last_token)
+                sampled_token = torch.multinomial(distribution_for_last_token, num_samples=1)
+                generated.append(sampled_token)
+                feed_to_lm.append(sampled_token)
+        return generated
 

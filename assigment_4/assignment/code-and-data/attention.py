@@ -53,7 +53,6 @@ def self_attention_layer(x, kqv_matrix, attention_mask):
     return sa
 
 def multi_head_attention_layer(x, kqv_matrices, mask):
-    raise Exception("Not implemented.")
     B, N, D = x.size()
     # TODO implement multi-head attention.
     # This is most easily done using calls to self_attention_layer, each with a different
