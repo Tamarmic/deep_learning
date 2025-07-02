@@ -3,6 +3,7 @@ import torch
 import torch.nn.functional as F
 import attention
 import mlp
+from typing import List 
 
 class TransformerDecoderBlock(nn.Module):
     def __init__(self, n_heads: int, embed_size: int, mlp_hidden_size: int, max_context_len, with_residuals: bool = False):
@@ -102,7 +103,7 @@ class TransformerLM(nn.Module):
                 torch.nn.init.xavier_normal_(p.weight)
 
 
-    def sample_continuation(self, prefix: list[int], max_tokens_to_generate: int) -> list[int]:
+    def sample_continuation(self, prefix: List[int], max_tokens_to_generate: int) -> List[int]:
         feed_to_lm = prefix[:]
         generated = []
         with torch.no_grad():
@@ -118,10 +119,9 @@ class TransformerLM(nn.Module):
                 feed_to_lm.append(sampled_token)
         return generated
 
-    def better_sample_continuation(self, prefix: list[int], max_tokens_to_generate: int, temperature: float, topK: int) -> list[int]:
-        raise Exception("Not implemented")
+    def better_sample_continuation(self, prefix: List[int], max_tokens_to_generate: int, temperature: float, topK: int) -> List[int]:
         # TODO implement this.
-        # Temperature should be the temperature in which you sample.
+        # Temperature should be the temperature in which you sample .
         # TopK indicates that we don't sample from the entire distribution, but only from the top k scoring tokens
         # for the given position.
         feed_to_lm = prefix[:]
