@@ -1,74 +1,70 @@
-import torch
 import matplotlib.pyplot as plt
-import seaborn as sns
-import argparse
+import torch
+from torch import Tensor
+from pathlib import Path
+
 from transformer import TransformerLM
+from attention import kqv, attention_scores
 from data import CharTokenizer
-import os
 
-# Global variable to store attention weights
-attention_maps = []
 
-def get_hook(layer_idx):
-    def hook(module, input, output):
-        # Save [batch, heads, query_len, key_len] → remove batch dim
-        attention_maps.append(module.last_attention_weights[0].detach().cpu())
-    return hook
+def heat_map_kqv(x: Tensor, kqv_matrix: Tensor) -> Tensor:
+    k, q, v = kqv(x, kqv_matrix)
+    return attention_scores(k, q).detach().cpu()
 
-def visualize_attention(attn, tokens, layer, head):
-    matrix = attn[head]  # shape: [seq_len, seq_len]
-    plt.figure(figsize=(8, 6))
-    sns.heatmap(matrix, xticklabels=tokens, yticklabels=tokens, cmap='viridis')
-    plt.title(f'Layer {layer}, Head {head}')
-    plt.xlabel('Key Positions')
-    plt.ylabel('Query Positions')
-    plt.show()
 
-def run_analysis(prompt, model_path, tokenizer_path, device):
-    global attention_maps
-    attention_maps = []
+def create_headwise_plots(model: TransformerLM, x: Tensor, token_labels: list[str], save_dir: str):
+    Path(save_dir).mkdir(exist_ok=True)
+    layer = model.layers[0]  # Only layer 1
 
-    # Load tokenizer
-    tokenizer = CharTokenizer.load(tokenizer_path)
-    tokens = tokenizer.tokenize(prompt)
-    tokens_str = list(prompt)
+    for j, head_matrix in enumerate(layer.causal_attention.kqv_matrices):
+        heat_map = heat_map_kqv(x, head_matrix)[0]  # [B, T, T] → take batch=0
 
-    # Load model
-    model = TransformerLM(
-        n_layers=6,
-        n_heads=6,
-        embed_size=192,
-        max_context_len=128,
-        vocab_size=tokenizer.vocab_size(),
-        mlp_hidden_size=768,
-        with_residuals=True,
-        device=device,
-    ).to(device)
+        fig, ax = plt.subplots(figsize=(10, 10))
+        cax = ax.matshow(heat_map.numpy(), cmap="Greys")
+        fig.colorbar(cax, ax=ax)
 
-    checkpoint = torch.load(model_path, map_location=device)
-    model.load_state_dict(checkpoint['model_state_dict'])
-    model.eval()
+        ax.set_title(f"Layer 1, Head {j + 1}")
+        ax.set_xticks(range(len(token_labels)))
+        ax.set_yticks(range(len(token_labels)))
+        ax.set_xticklabels(token_labels, rotation=90)
+        ax.set_yticklabels(token_labels)
+        ax.tick_params(axis='x', labelsize=8)
+        ax.tick_params(axis='y', labelsize=8)
 
-    # Register hooks to capture attention from each layer
-    for i, block in enumerate(model.layers):
-        block.causal_attention.register_forward_hook(get_hook(i))
+        plt.tight_layout()
+        plt.savefig(f"{save_dir}/layer1_head{j + 1}.png")
+        plt.close()
 
-    # Feed prompt
-    input_ids = torch.tensor([tokens], dtype=torch.long).to(device)
-    with torch.no_grad():
-        _ = model(input_ids)
 
-    # Visualize attention from layer 0 head 0 (as example)
-    for layer_idx, attn in enumerate(attention_maps):
-        for head_idx in range(attn.shape[0]):
-            visualize_attention(attn, tokens_str, layer=layer_idx, head=head_idx)
+# Run setup
+model_path = "checkpoint.pt"
+tokenizer_path = "tokenizer.json"
+prompt = "If a then b. If b then c. If c then d. If d then e. This creates a chain of logic."
+max_len = 128
+save_dir = "layer1_attention_pages"
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--prompt", type=str, default="the moon is blue.")
-    parser.add_argument("--model_path", type=str, default="checkpoint.pt")
-    parser.add_argument("--tokenizer_path", type=str, default="tokenizer.json")
-    args = parser.parse_args()
+# Load tokenizer and model
+tokenizer = CharTokenizer.load(tokenizer_path)
+token_ids = tokenizer.tokenize(prompt)
+token_labels = list(prompt)
+tokens_tensor = torch.tensor([token_ids], dtype=torch.long)
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    run_analysis(args.prompt, args.model_path, args.tokenizer_path, device)
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model = TransformerLM(
+    n_layers=6,
+    n_heads=6,
+    embed_size=192,
+    max_context_len=max_len,
+    vocab_size=tokenizer.vocab_size(),
+    mlp_hidden_size=4 * 192,
+    with_residuals=True,
+    device=device,
+).to(device)
+model.load_state_dict(torch.load(model_path, map_location=device)["model_state_dict"])
+model.eval()
+
+# Generate plots
+with torch.no_grad():
+    embeddings = model.embed(tokens_tensor.to(device))
+    create_headwise_plots(model, embeddings, token_labels, save_dir)
